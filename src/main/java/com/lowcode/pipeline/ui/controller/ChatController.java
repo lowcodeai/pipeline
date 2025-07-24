@@ -17,7 +17,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 @RestController
-//@RequestMapping("/chat")
 @SessionAttributes("chatMemory")
 public class ChatController {
 
@@ -97,16 +96,27 @@ public class ChatController {
                 .content();
 
         // Save response to file
-//        if (response.contains("AI Pipeline Specification Summary")) {
-//            log.info("Saving AI response to file");
-//            saveResponseToFile(conversationId, response);
-//        }
+        if (response.contains("Plain Text Summary")) {
+            log.info("Saving AI response to file");
+            saveResponseToFile(conversationId, response);
+        }
 
-        log.info("Saving AI response to file");
-        saveResponseToFile(conversationId, response);
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Saves the AI-generated response to a file named after the given conversation ID.
+     *
+     * <p>The method creates a file in the {@code specifications/} directory with a filename
+     * formatted as {@code spec_<conversationId>.txt}. If the directory does not exist, it
+     * is created. The file is overwritten if it already exists.</p>
+     *
+     * <p>This is useful for persisting AI responses tied to a conversation, such as
+     * pipeline specifications or other structured outputs.</p>
+     *
+     * @param conversationId the unique identifier for the conversation, used in the filename
+     * @param response       the content to be saved to the file
+     */
     private void saveResponseToFile(String conversationId, String response) {
         String fileName = "specifications/spec_" + conversationId + ".txt";  // Save as .txt or .json if it's structured
         Path filePath = Paths.get(fileName);
