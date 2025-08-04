@@ -1,0 +1,15 @@
+AI_Pipeline:
+  Analysis_Type: Anomaly Detection
+  Input_Data:
+    Type:
+      Image: Medical Scans
+    Distribution: Balanced
+    Format: Unstructured
+    Size: Hundreds
+    Data_Privacy:
+      - Anonymized
+      - PII_Removed
+  Desired_Output: Binary Classification
+
+
+
