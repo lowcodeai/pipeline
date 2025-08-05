@@ -1,5 +1,9 @@
 package com.lowcode.pipeline;
 
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -16,4 +20,14 @@ public class PipelineApplication {
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
+
+	@Bean
+	public ChatClient openAiChatlient(ChatMemory chatMemory, OpenAiChatModel chatModel) {
+		return ChatClient
+				.builder(chatModel)
+				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+				.build();
+	}
+
+
 }

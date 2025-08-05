@@ -5,6 +5,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.ChatOptions;
+//import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,32 +28,12 @@ import java.nio.file.StandardOpenOption;
 public class ChatController {
 
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
-    private final ChatClient chatClient;
 
-    private OpenAiChatModel chatModel;
+    @Autowired
+    private ChatClient chatClient;
 
     @Autowired
     private RestTemplate restTemplate;
-    @Autowired
-    private OpenAiChatModel openAiChatModel;
-
-    /**
-     * Constructs a new {@code ChatController} with the specified {@link ChatClient.Builder}
-     * and {@link ChatMemory} instance.
-     *
-     * <p>This constructor initializes the {@code chatClient} using the provided builder,
-     * setting a default advisor based on the given chat memory context. The advisor enables
-     * conversation continuity by tracking chat history and memory.
-     * By default, Spring AI will wire up a ChatMemoryRepository → MessageWindowChatMemory </p>
-     *
-     * @param chatMemory the memory context used to retain conversation state across messages
-     * @param openAiChatModel the LLM chat model.
-     */
-   public ChatController(ChatMemory chatMemory, OpenAiChatModel openAiChatModel) {
-       this.chatClient = ChatClient.builder(openAiChatModel)
-               .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-               .build();
-   }
 
     private static ChatOptions chatOptions() {
         return ChatOptions.builder().temperature(0.3).build();
@@ -109,9 +90,9 @@ public class ChatController {
                 .content();
 
         // Save response to file
-//        if (response.contains("Plain Text Summary")) {
-//            log.info("Saving AI response to file");
-//            saveResponseToFile(conversationId, response);
+        if (response.contains("Plain Text Summary")) {
+            log.info("Saving AI response to file");
+            saveResponseToFile(conversationId, response);
 
             // Create new request
 //            req = new ChatRequest(conversationId, response);
@@ -125,7 +106,7 @@ public class ChatController {
 //                        .body("Failed to call /chatB: " + e.getMessage());
 //            }
 
-//        }
+        }
 
         return ResponseEntity.ok(response);
     }
@@ -536,16 +517,16 @@ public class ChatController {
      * @param conversationId the unique identifier for the conversation, used in the filename
      * @param response       the content to be saved to the file
      */
-//    private void saveResponseToFile(String conversationId, String response) {
-//        String fileName = "specifications/spec_" + conversationId + ".txt";  // Save as .txt or .json if it's structured
-//        Path filePath = Paths.get(fileName);
-//
-//        try {
-//            Files.createDirectories(filePath.getParent());  // Ensure 'specifications' directory exists
-//            Files.writeString(filePath, response, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-//            log.info("Saved AI response to {}", filePath.toAbsolutePath());
-//        } catch (IOException e) {
-//            log.error("Failed to save AI response", e);
-//        }
-//    }
+    private void saveResponseToFile(String conversationId, String response) {
+        String fileName = "specifications/spec_" + conversationId + ".txt";  // Save as .txt or .json if it's structured
+        Path filePath = Paths.get(fileName);
+
+        try {
+            Files.createDirectories(filePath.getParent());  // Ensure 'specifications' directory exists
+            Files.writeString(filePath, response, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            log.info("Saved AI response to {}", filePath.toAbsolutePath());
+        } catch (IOException e) {
+            log.error("Failed to save AI response", e);
+        }
+    }
 }
