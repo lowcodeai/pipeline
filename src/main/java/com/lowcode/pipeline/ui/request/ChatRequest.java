@@ -11,4 +11,5 @@ public class ChatRequest {
 
     private String conversationID;
     private String message;
+    private ChatType type;
 }
