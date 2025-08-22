@@ -26,12 +26,23 @@ public class ChatController {
 
 //        return ResponseEntity.ok(chatService.pipelineSpecification(conversationId, message));
 
-        if (chatType == ChatType.PROBLEM_DEFINITION) {
-            return ResponseEntity.ok(chatService.problemDefinition(conversationId, message));
-        } else if (chatType == ChatType.PIPELINE_SPECIFICATION) {
-            return ResponseEntity.ok(chatService.pipelineSpecification(conversationId, message));
-        } else {
-            return ResponseEntity.badRequest().body("Invalid chat type");
-        }
+        var response = switch (chatType) {
+            case PROBLEM_DEFINITION -> ResponseEntity.ok(chatService.problemDefinition(conversationId, message));
+            case COMPUTE_SPECIFICATION -> ResponseEntity.ok(chatService.computeSpecification(conversationId, message));
+            case PIPELINE_SPECIFICATION -> ResponseEntity.ok(chatService.pipelineSpecification(conversationId, message));
+            default -> ResponseEntity.badRequest().body("Invalid chat type");
+        };
+//
+//        if (chatType == ChatType.PROBLEM_DEFINITION) {
+//            return ResponseEntity.ok(chatService.problemDefinition(conversationId, message));
+//        } else if (chatType == ChatType.PIPELINE_SPECIFICATION) {
+//            return ResponseEntity.ok(chatService.pipelineSpecification(conversationId, message));
+//        } else {
+//            return ResponseEntity.badRequest().body("Invalid chat type");
+//        }
+
+        return response;
+
+
     }
 }
