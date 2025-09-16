@@ -21,13 +21,4 @@ public class PipelineApplication {
 		return new RestTemplate();
 	}
 
-	@Bean
-	public ChatClient openAiChatlient(ChatMemory chatMemory, OpenAiChatModel chatModel) {
-		return ChatClient
-				.builder(chatModel)
-				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-				.build();
-	}
-
-
 }
