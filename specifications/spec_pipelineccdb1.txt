@@ -1,0 +1,120 @@
+The provided information is quite comprehensive for generating the Python code for the proposed pipeline. Below is a step-by-step implementation of the pipeline using TensorFlow and Keras. This code will cover data preprocessing, model architecture, compilation, training, and evaluation.
+
+Make sure you have the necessary libraries installed. You can install them using pip if you haven't done so:
+
+```bash
+pip install tensorflow pydicom numpy scikit-learn matplotlib
+```
+
+Here is the complete Python code for the pipeline:
+
+```python
+import os
+import numpy as np
+import pydicom
+import cv2
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, mean_squared_error
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Dropout, Flatten
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.optimizers import Adam
+import matplotlib.pyplot as plt
+
+# Constants
+DATA_DIR = 'path/to/dicom/images'  # Update with your DICOM images directory
+IMG_SIZE = (224, 224)  # Size for VGG16
+BATCH_SIZE = 32
+EPOCHS = 20
+
+# Step 1: Data Preprocessing
+def load_dicom_images(data_dir):
+    images = []
+    labels = []
+    
+    for label in ['tumor_present', 'tumor_not_present']:
+        folder_path = os.path.join(data_dir, label)
+        for filename in os.listdir(folder_path):
+            if filename.endswith('.dcm'):
+                dicom_path = os.path.join(folder_path, filename)
+                dicom_image = pydicom.dcmread(dicom_path).pixel_array
+                # Convert to suitable format and resize
+                image = cv2.resize(dicom_image, IMG_SIZE)
+                images.append(image)
+                labels.append(1 if label == 'tumor_present' else 0)
+    
+    return np.array(images), np.array(labels)
+
+# Load images and labels
+X, y = load_dicom_images(DATA_DIR)
+
+# Normalize pixel values
+X = X.astype('float32') / 255.0
+
+# Split the dataset into training and validation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Data augmentation
+datagen = ImageDataGenerator(
+    rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest'
+)
+
+# Step 2: Model Architecture
+base_model = VGG16(weights='imagenet', include_top=False, input_shape=(IMG_SIZE[0], IMG_SIZE[1], 3))
+x = Flatten()(base_model.output)
+x = Dense(128, activation='relu')(x)
+x = Dropout(0.5)(x)
+output = Dense(1, activation='sigmoid')(x)
+
+model = Model(inputs=base_model.input, outputs=output)
+
+# Step 3: Compilation
+model.compile(optimizer=Adam(), loss='binary_crossentropy', metrics=['accuracy'])
+
+# Step 4: Training
+history = model.fit(datagen.flow(X_train, y_train, batch_size=BATCH_SIZE),
+                    validation_data=(X_val, y_val),
+                    epochs=EPOCHS,
+                    steps_per_epoch=len(X_train) // BATCH_SIZE,
+                    validation_steps=len(X_val) // BATCH_SIZE)
+
+# Step 5: Evaluation
+y_pred = (model.predict(X_val) > 0.5).astype("int32")
+
+# Calculate evaluation metrics
+accuracy = accuracy_score(y_val, y_pred)
+precision = precision_score(y_val, y_pred)
+recall = recall_score(y_val, y_pred)
+f1 = f1_score(y_val, y_pred)
+rmse = np.sqrt(mean_squared_error(y_val, y_pred))
+
+print(f'Accuracy: {accuracy:.4f}')
+print(f'Precision: {precision:.4f}')
+print(f'Recall: {recall:.4f}')
+print(f'F1 Score: {f1:.4f}')
+print(f'RMSE: {rmse:.4f}')
+
+# Plot training history
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label='val_accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+```
+
+### Notes:
+1. **Data Directory**: Update the `DATA_DIR` variable with the path to your DICOM images organized in folders named "tumor_present" and "tumor_not_present".
+2. **Image Size**: The images are resized to 224x224 pixels to match the input size of the VGG16 model.
+3. **Data Augmentation**: This is applied to increase the diversity of the training dataset.
+4. **Model Training**: The model is trained for 20 epochs, but you can adjust this based on your needs.
+5. **Evaluation Metrics**: The code calculates accuracy, precision, recall, F1 score, and RMSE after training.
+
+Make sure to run this code in an environment where you have access to the necessary computational resources, especially if you're using a dedicated server with a GPU.

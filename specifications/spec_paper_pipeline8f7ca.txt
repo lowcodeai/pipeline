@@ -1,0 +1,3 @@
+To propose alternative AI pipelines effectively, I would like to know more about your preferences regarding the following:
+
+1. **Model Complexity**: Are you looking for a simple model that is easier to implement and understand, or are you open to more complex models that may provide better accuracy but require more expertise?

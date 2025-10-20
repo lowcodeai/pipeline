@@ -49,7 +49,7 @@ public class ChatService {
         // Save response to file and then create a configuration
         if (response.isPresent() && response.get().contains("Plain Text Summary")) {
             log.info("Saving AI response to file");
-            genHandler.saveResponseToFile("problem" + conversationId.substring(0, 5), response.get());
+            genHandler.saveResponseToFile("paper_problem" + conversationId.substring(0, 5), response.get());
 
             // Update the system message
             systemMessage.updateSystemMessageForCompute(response.get());
@@ -63,70 +63,7 @@ public class ChatService {
     public String computeSpecification(String conversationId, String message) {
         log.info("Requesting information for Compute and Tooling Specification ={}", conversationId);
 
-//        String systemM = """
-//                You are an AI assistant tasked with gathering ONLY the COMPUTE and RUN-TIME PATHS information for an
-//                AI pipeline based on the user's input. The user is not a Computer Science or AI specialist, and you are
-//                encouraged to provide contextual information that guides the user's responses to your questions.
-//
-//                To achieve this, ask concise, domain-friendly questions **one at a time**, covering the following key aspects in order:
-//                If any information is missing, unclear, or incomplete, **ask polite follow-up questions before moving to the next question**.
-//
-//                Step 1: Hardware
-//                - Type of hardware
-//                -
-//
-//                Interaction rules:
-//                - Be concise, avoid jargon unless explained in plain language, and focus on basic information that have impact on the pipeline code.
-//                - After each user reply, ask the NEXT best single question. Never ask multiple questions at once.
-//                - Use the provided context to specialize your questions; do not restate it verbatim.
-//                - When you have enough information the hardware and data location details, generate a complete Compute
-//                Specification in JSON format, then stop.
-//
-//
-//                Context (semi‑structured problem follows). Use its details to specialize your questions instead of asking generic ones.
-//
-//                """;
 
-//        String systemM = """
-//                You are an AI assistant tasked with gathering COMPUTE ENVIRONMENT information for an AI/ML pipeline. Ask
-//                concise, domain-friendly questions **one at a time**, focuing on the basic and layman's information
-//                from the user, and propose different options and their implications.
-//
-//                Note that the user does not have any background in Computer Science or AI specialist, and you are encouraged to
-//                provide contextual information that guides the user's input.
-//
-//                To achieve this, ask concise, domain-friendly questions **one at a time**, covering the following key aspects in order:
-//                If any information is missing, unclear, or incomplete, **ask polite follow-up questions before moving to the next question**.
-//                If the user enters "Not Applicable", mark the corresponding field as unknown, and move on to the next question.
-//
-//                Start by asking what type of compute environment the user has (e.g., Are you working on a local workstation, on-prem cluster, or in the cloud?):
-//                - local workstation,
-//                - on-prem/HPC cluster, or
-//                - cloud instance/service.
-//
-//                Based on their answer, adapt your follow-up questions to gather:
-//                - GPU: model and VRAM in GB
-//                - CPU: model and number of cores (or vCPUs)
-//                - RAM: total system memory in GB
-//                - Storage: mount/path or service (local disk, network, or cloud), type (nvme, ssd, hdd, network, cloud), free space if known, and notes \s
-//                - Paths:
-//                  - project_root (where code/configs live)
-//                  - data_train, data_val, data_test (where training/validation/test data are located)
-//                  - labels_location (if labels are separate)
-//                  - outputs_root (base folder for outputs)
-//                  - checkpoints_dir (where to save model checkpoints)
-//                  - logs_dir (where to save training logs)
-////
-////                After the logs directory question, **STOP** asking questions and generate valid JSON containing exactly
-////                the target fields, and STOP. No extra text before or after the JSON.
-//
-//                After the logs directory question, **STOP** asking questions and provide:.
-//                1. A **Plain Text Summary** of the compute, infrastructure, and paths.
-//                2. A **Structured JSON object** containing exactly the target fields.
-//
-//                Context (semi‑structured problem follows). Use its details to specialize your questions instead of asking generic ones.
-//
-//                """;
 
 //        String systemM = """
 //                You are an AI assistant tasked with gathering COMPUTE ENVIRONMENT information for an AI/ML pipeline. Ask
@@ -147,9 +84,7 @@ public class ChatService {
 
 
         String systemM = """
-                Prompt Message
-                
-                You are an AI assistant helping a researcher define their computing environment for training an AI model.
+                You are an AI Architect Expert helping a researcher define their computing environment for training an AI model.
                 Ask domain-friendly questions **one after the other**, to the user, and propose different pipeline options and
                 their implications. The output of this questionnaire will be fed to another tool that will generate the
                 pipeline code. Hence, don't ask questions about programming language, preprocessing, AI/Ml framework, etc.
@@ -164,82 +99,149 @@ public class ChatService {
                 Provide contextual information that guides the user's input.
                 Cover the following topics in order:
                 
-                1. Where the training will happen.
+                1. The experience level of the researcher in computing infrastucture.
+                2. Preferred location for the training.
                 
-                Based on their answer, adapt your follow-up questions to gather:
+                Based on their answers, adapt your follow-up questions to gather:
                 
-                2. The compute option(s).
-                3. Whether the compute option has a GPU.
-                4. Available storage space for the dataset.
-                5. How much waiting time they are comfortable with for training.
+                3. The compute options (e.g., local workstation, on-prem cluster, or in the cloud) the researcher has.
+                4. Whether the compute option has a GPU.
+                5. Available storage space for the dataset.
+                6. Training frequency (one-off, weekly, monthly, continuous)
+                7. Budget for computing costs.
                 
                 After asking questions about the budget, **STOP** asking questions and generate a **Compute Environment Specification**,
                 and its implications in terms of cost, availability, accessibility, privileges, model performance, and training time.
+                
+                Also, propose alternative options for the compute environment, and their implications.
 
                 Context (semi‑structured problem follows). Use its details to specialize your questions instead of asking generic ones.
 
                 """;
 
+        String systemTP = """
+                You are an AI Architect Expert that guides users in defining their computing environment for AI pipeline
+                generation. Act as an expert facilitator who adapts language to the user’s expertise level.
+                
+                Your task:
+                Keep questions simple, one at a time.
+                Avoid technical jargon for beginners.
+                
+                Step 1 (Entry Point):
+                Ask if the user already has a computing environment.
+                    If YES, go to Step 2a (Known Environment)
+                    If NO, go to Step 2b (New Environment)
+                
+                Step 2a (Known Environment):
+                - The compute options (e.g., local workstation, on-prem cluster, or in the cloud) the researcher has.
+                - Whether the compute option has a GPU.
+                - Available storage space for the dataset.
+                - Constraints:
+                    - Queue/wait times
+                    - Quotas or usage limits
+                - Usage Model:
+                    - Training frequency (one-off, weekly, monthly, continuous)
+                    - Inference needs (batch, real-time)
+                
+                Step 2a (New Environment):
+                - Assess experience level
+                - Budget preference
+                    - One-time (buy hardware) vs. recurring (cloud subscription).
+                    - Max budget per month / per project.
+                - Workload pattern
+                    - Small dataset vs large-scale (millions/streaming).
+                    - Batch only vs real-time inference.
+                - Priorities
+                    - Rank: lowest cost / fastest results / easiest maintenance.
+                
+                At the end, generate a **Compute Environment Specification**, and its implications in terms of cost,
+                availability, accessibility, privileges, model performance, and training time.
+                
+                Also, propose alternative options for the compute environment, and their implications.
+
+                Context (semi‑structured problem follows). Use its details to specialize your questions instead of asking
+                generic ones.
+                
+                let's think step by step.
+
+                """;
+
         String systemMT = """
-                You are an AI assistant helping a researcher (with no background in AI or computer science) describe
-                their computing environment for training an AI model on MRI images.
+                Role: You are an assistant helping medical researchers choose computing options for their AI research.
                 
-                Your role and behavior:
-                Ask one question at a time and adapt wording to the researcher’s level.
-                Use simple everyday examples.
-                Always provide easy answer options (multiple-choice style), but also allow free-form answers.
-                If the researcher doesn’t know, reassure them (“That’s fine, we can work around it”) and move on.
-                Keep technical terms to a minimum, and translate them into plain language if they come up.
-                At the end, generate a **Compute Environment Specification**, in plain English and briefly explain how
-                their situation might affect: 
-                - Training speed
-                - Accuracy of the model
-                - Cost
+                Your Goals:
                 
-                Information you need to collect:
-                1. Where the training will happen.
-                2. The type of computing..
-                3. Whether special graphics cards (GPUs) are available.
-                4. How much storage space is available for the data.
-                5. How much waiting time is acceptable for training.
-                6. Whether they have a budget for computing costs.
+                First identify the user’s experience level and their preferred computing location.
+                
+                Then check whether they already have a computing environment or not.
+                
+                If they already have one, ask only basic questions about how they use it and their budget.
+                
+                If they don’t have one, ask simple questions about budget, ease of use, and preferences.
+                
+                At the end, provide 2–3 computing options with a short trade-off summary (cost, ease of use, and flexibility).
+                
+                Interaction Rules
+                
+                Keep questions simple, non-technical, and one at a time.
+                
+                Use plain language (avoid jargon).
+                
+                Adapt based on answers—don’t ask unnecessary follow-ups.
+                
+                Always end with a short set of tailored recommendations and trade-offs.
                 """;
 
 //        After the logs directory question, **STOP** asking questions and generate valid JSON containing exactly
 ////      the target fields, and STOP. No extra text before or after the JSON.
 
         String problemDefn = """
-                Thank you for confirming that there are no additional requirements. To summarize our discussion: ### Plain Text Summary You are working in the healthcare domain, specifically focusing on detecting brain tumors through MRI scans. Your goal is to develop an AI system that can classify MRI images as either showing the presence or absence of a tumor. You aim to use AI for this task to improve diagnostic accuracy and efficiency for radiologists and researchers. You have a dataset of 1,500 labeled MRI scans, where the labels indicate whether a tumor is present. The data is well-organized, with no known issues, and you plan to evaluate the AI system's performance using accuracy, precision, recall, and F1 score. Additionally, you must ensure that the data is anonymized and compliant with healthcare regulations. There are no specific deployment preferences. ### Structured JSON Object
-                json
+                ### Summary of Your Project:
+                You are working on designing and implementing an automatic brain tumor detection system in the medical science domain. As a beginner in AI, you aim to utilize AI for fast, accurate, and automated detection of brain tumors using a dataset of 1,500 labeled MRI images in DICOM format. The images are organized in a folder and labeled as either "tumor present" or "tumor not present." You plan to evaluate the system's performance using metrics such as accuracy, precision, recall, F1 score, and root mean square error, with a tolerance for misclassification of 7 to 10%. Privacy considerations are important, as the dataset must be protected. The intended users of the system are medical professionals and researchers, and you do not have a specific timeline for the project.
+                
+                ### Structured JSON Object:
+                ```json
                 {
-                  "domain": "healthcare",
-                  "problem": {
-                    "goals": "Detect brain tumors in MRI scans using AI.",
-                    "reason_for_ai": "To improve diagnostic accuracy and efficiency.",
-                    "current_solution": "N/A"
-                  },
-                  "data": {
-                    "type": "MRI scans",
-                    "storage": "Research repository",
-                    "key_variables": ["tumor presence"],
-                    "size": 1500,
-                    "labeled": true,
-                    "label_description": "Indicates presence or absence of a tumor.",
-                    "known_issues": "None"
-                  },
-                  "task": {
-                    "expected_output": "Binary classification (tumor present or absent).",
-                    "evaluation_metrics": ["accuracy", "precision", "recall", "F1 score"],
-                    "error_tolerance": "N/A"
-                  },
-                  "constraints": {
-                    "privacy": "Data must be anonymized.",
-                    "legal_regulations": "Must comply with government and healthcare regulations.",
-                    "ethical_concerns": "N/A"
-                  },
-                  "intended_users": ["radiologists", "researchers"],
-                  "deployment_preferences": "No preference."
+                  "project": {
+                    "domain": "Medical Science",
+                    "experience_level": "Beginner",
+                    "goals": "Design and implement an automatic brain tumor detection system.",
+                    "reason_for_using_AI": "AI enables fast, accurate, and automated detection of brain tumors.",
+                    "current_solution": "Classical machine learning approaches.",
+                    "data": {
+                      "type": "MRI images",
+                      "format": "DICOM",
+                      "distribution": "Historical collection",
+                      "storage": "Stored in a folder",
+                      "size": 1500,
+                      "labeled": true,
+                      "labeling_method": "Tumor present or not present",
+                      "known_issues": "No issues"
+                    },
+                    "task": {
+                      "expected_output": "Classify images as tumor present or not present.",
+                      "evaluation_metrics": [
+                        "accuracy",
+                        "precision",
+                        "recall",
+                        "F1 score",
+                        "root mean square error"
+                      ],
+                      "error_tolerance": "7 to 10%"
+                    },
+                    "constraints": {
+                      "privacy": "Protect the privacy of the dataset.",
+                      "legal_regulatory": "None specified",
+                      "ethical_concerns": "None specified"
+                    },
+                    "intended_users": [
+                      "Medical professionals",
+                      "Researchers"
+                    ],
+                    "timeline": "No specific deadline"
+                  }
                 }
+                
                 """;
 
         String userM = """
@@ -290,7 +292,6 @@ public class ChatService {
         log.info("Requesting pipeline information in Chat ID ={}, message: {}", conversationId, message);
 
         String innerSystemMessage = """
-                Role & Goal
                 You are an AI assistant that produces a conceptual, step-by-step AI/ML pipeline specification. 
                 Your specification will be consumed by a separate tool to generate code. You must make the technical 
                 decisions yourself, aligning them with the user’s Problem Specification and Compute/Infrastructure 
@@ -324,138 +325,251 @@ public class ChatService {
                 
                 """;
 
-        String computeSpec = """
-                ### Plain Text Summary
-                - **Compute Environment**: On-premises
-                - **CPU**: 16 cores
-                - **RAM**: 128 GB
-                - **Storage**: 1 TB SSD
-                - **Outputs Root**: output/root
-                - **Data Paths**: Not specified (data_train, data_val, data_test, labels_location)
-                - **Checkpoints Directory**: Not specified
-                - **Logs Directory**: Not specified
-                
-                ### Structured JSON
-                ```json
-                {
-                  "compute": {
-                    "cpu": {
-                      "cores": 16
-                    },
-                    "ram": 128,
-                    "storage": {
-                      "type": "SSD",
-                      "size": "1TB"
-                    }
-                  },
-                  "paths": {
-                    "project_root": "Not Applicable",
-                    "data_train": "Not Applicable",
-                    "data_val": "Not Applicable",
-                    "data_test": "Not Applicable",
-                    "labels_location": "Not Applicable",
-                    "outputs_root": "output/root",
-                    "checkpoints_dir": "Not Applicable",
-                    "logs_dir": "Not Applicable"
-                  }
-                }
-                ```
-                """;
 
-//        String computeSpec = """
-//                ### Plain Text Summary
-//                You are working on a local workstation for your AI project focused on detecting brain tumors in MRI scans. Your workstation is equipped with an NVIDIA RTX 4090 GPU with 24 GB of VRAM and an AMD Ryzen 9 7950X CPU with 16 cores. You have a total of 128 GB of RAM. Your storage is an HDD mounted at `/data`, with 1200 GB of free space available. The paths for your project and data are as follows:
-//                - Project Root: `/home/user/brain-tumor-ai`
-//                - Training Data: `/data/brain_mri/train`
-//                - Validation Data: `/data/brain_mri/val`
-//                - Test Data: `/data/brain_mri/test`
-//                - Labels Location: `/data/brain_mri/labels`
-//                - Outputs Root: `/home/user/brain_mri_outputs`
-//                - Checkpoints Directory: `/home/user/brain_mri_outputs/checkpoints`
-//                - Logs Directory: `/home/user/brain_mri_outputs/logs`
-//
-//                ### Structured JSON Object
-//                ```json
-//                {
-//                  "compute": {
-//                    "environment": "local workstation",
-//                    "gpu": {
-//                      "model": "NVIDIA RTX 4090",
-//                      "vram": 24
-//                    },
-//                    "cpu": {
-//                      "model": "AMD Ryzen 9 7950X",
-//                      "cores": 16
-//                    },
-//                    "ram": 128
-//                  },
-//                  "infrastructure": {
-//                    "storage": {
-//                      "type": "HDD",
-//                      "mount": "/data",
-//                      "free_space": 1200
-//                    }
-//                  },
-//                  "paths": {
-//                    "project_root": "/home/user/brain-tumor-ai",
-//                    "data_train": "/data/brain_mri/train",
-//                    "data_val": "/data/brain_mri/val",
-//                    "data_test": "/data/brain_mri/test",
-//                    "labels_location": "/data/brain_mri/labels",
-//                    "outputs_root": "/home/user/brain_mri_outputs",
-//                    "checkpoints_dir": "/home/user/brain_mri_outputs/checkpoints",
-//                    "logs_dir": "/home/user/brain_mri_outputs/logs"
-//                  }
-//                }
-//                ```
-//                """;
 
         String problemDefn = """
-                Thank you for confirming that there are no additional requirements. To summarize our discussion: ### Plain Text Summary You are working in the healthcare domain, specifically focusing on detecting brain tumors through MRI scans. Your goal is to develop an AI system that can classify MRI images as either showing the presence or absence of a tumor. You aim to use AI for this task to improve diagnostic accuracy and efficiency for radiologists and researchers. You have a dataset of 1,500 labeled MRI scans, where the labels indicate whether a tumor is present. The data is well-organized, with no known issues, and you plan to evaluate the AI system's performance using accuracy, precision, recall, and F1 score. Additionally, you must ensure that the data is anonymized and compliant with healthcare regulations. There are no specific deployment preferences. ### Structured JSON Object
-                json
+                ### Summary of Your Project:
+                You are working on designing and implementing an automatic brain tumor detection system in the medical science domain. As a beginner in AI, you aim to utilize AI for fast, accurate, and automated detection of brain tumors using a dataset of 1,500 labeled MRI images in DICOM format. The images are organized in a folder and labeled as either "tumor present" or "tumor not present." You plan to evaluate the system's performance using metrics such as accuracy, precision, recall, F1 score, and root mean square error, with a tolerance for misclassification of 7 to 10%. Privacy considerations are important, as the dataset must be protected. The intended users of the system are medical professionals and researchers, and you do not have a specific timeline for the project.
+                
+                ### Structured JSON Object:
+                ```json
                 {
-                  "domain": "healthcare",
-                  "problem": {
-                    "goals": "Detect brain tumors in MRI scans using AI.",
-                    "reason_for_ai": "To improve diagnostic accuracy and efficiency.",
-                    "current_solution": "N/A"
-                  },
-                  "data": {
-                    "type": "MRI scans",
-                    "storage": "Research repository",
-                    "key_variables": ["tumor presence"],
-                    "size": 1500,
-                    "labeled": true,
-                    "label_description": "Indicates presence or absence of a tumor.",
-                    "known_issues": "None"
-                  },
-                  "task": {
-                    "expected_output": "Binary classification (tumor present or absent).",
-                    "evaluation_metrics": ["accuracy", "precision", "recall", "F1 score"],
-                    "error_tolerance": "N/A"
-                  },
-                  "constraints": {
-                    "privacy": "Data must be anonymized.",
-                    "legal_regulations": "Must comply with government and healthcare regulations.",
-                    "ethical_concerns": "N/A"
-                  },
-                  "intended_users": ["radiologists", "researchers"],
-                  "deployment_preferences": "No preference."
+                  "project": {
+                    "domain": "Medical Science",
+                    "experience_level": "Beginner",
+                    "goals": "Design and implement an automatic brain tumor detection system.",
+                    "reason_for_using_AI": "AI enables fast, accurate, and automated detection of brain tumors.",
+                    "current_solution": "Classical machine learning approaches.",
+                    "data": {
+                      "type": "MRI images",
+                      "format": "DICOM",
+                      "distribution": "Historical collection",
+                      "storage": "Stored in a folder",
+                      "size": 1500,
+                      "labeled": true,
+                      "labeling_method": "Tumor present or not present",
+                      "known_issues": "No issues"
+                    },
+                    "task": {
+                      "expected_output": "Classify images as tumor present or not present.",
+                      "evaluation_metrics": [
+                        "accuracy",
+                        "precision",
+                        "recall",
+                        "F1 score",
+                        "root mean square error"
+                      ],
+                      "error_tolerance": "7 to 10%"
+                    },
+                    "constraints": {
+                      "privacy": "Protect the privacy of the dataset.",
+                      "legal_regulatory": "None specified",
+                      "ethical_concerns": "None specified"
+                    },
+                    "intended_users": [
+                      "Medical professionals",
+                      "Researchers"
+                    ],
+                    "timeline": "No specific deadline"
+                  }
                 }
+                
                 """;
 
-        String userM = """
-                Semi‑Structured Problem and Compute Definition:
-                {context}
+        String compute = """
+                ### Compute Environment Specification:
+                1. **Experience Level**: Beginner
+                2. **Preferred Location for Training**: Dedicated server
+                3. **Compute Option**: Dedicated server with GPU
+                4. **Available Storage Space**: About 1 TB
+                5. **Training Frequency**: Just once
+                6. **Budget for Computing Costs**: About $150
+                """;
+
+        String userM1 = """
+                Here is a jason description of a research problem that can be solved by an AI.
+                {problem}
                 
-                Begin by generating the pipeline or asking the first first if any information is missing, and you cannot 
-                make a decision without it..
+                And here is the available computing environment:
+                {compute}
+                
+                Do you need more information to propose alternative pipelines?
+                if yes, ask for those information, one question at a time.
+                """;
+
+
+        String userM = message;
+
+        if (counter == 0) {
+            userM = userM1.replace("{problem}", problemDefn).replace("{compute}", compute);
+        }
+        counter++;
+
+        String systemM = """
+                You are an AI specialist whose task is to propose alternative AI pipelines that align with a problem
+                definition, as well as a computing environment. Append each proposed pipeline with its pros and cons,
+                and note that the proposed specification will be consumed by a separate tool to generate implementation
+                code.
+                
+                Let's think step by step.
                 """;
 
         var content = chatClient.prompt()
                 .options(chatOptions)
-                .system(innerSystemMessage)
-                .user(u -> u.text(userM).param("context", problemDefn + computeSpec))
+                .system(systemM)
+                .user(userM)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .call()
+                .content();
+
+        Optional<String> response = Optional.ofNullable(content);
+        // Save response to file and then create a configuration
+        if (response.isPresent()) {
+            log.info("Saving generated pipeline to file");
+            genHandler.saveResponseToFile("paper_pipeline" + conversationId.substring(0, 5), response.get());
+
+        }
+        return response.orElse("");
+    }
+
+    public String codeGeneration(String conversationId, String message) {
+        log.info("Generating code in Chat ID ={}, message: {}", conversationId, message);
+
+        String problemDefn = """
+                ### Summary of Your Project:
+                You are working on designing and implementing an automatic brain tumor detection system in the medical science domain. As a beginner in AI, you aim to utilize AI for fast, accurate, and automated detection of brain tumors using a dataset of 1,500 labeled MRI images in DICOM format. The images are organized in a folder and labeled as either "tumor present" or "tumor not present." You plan to evaluate the system's performance using metrics such as accuracy, precision, recall, F1 score, and root mean square error, with a tolerance for misclassification of 7 to 10%. Privacy considerations are important, as the dataset must be protected. The intended users of the system are medical professionals and researchers, and you do not have a specific timeline for the project.
+                
+                ### Structured JSON Object:
+                ```json
+                {
+                  "project": {
+                    "domain": "Medical Science",
+                    "experience_level": "Beginner",
+                    "goals": "Design and implement an automatic brain tumor detection system.",
+                    "reason_for_using_AI": "AI enables fast, accurate, and automated detection of brain tumors.",
+                    "current_solution": "Classical machine learning approaches.",
+                    "data": {
+                      "type": "MRI images",
+                      "format": "DICOM",
+                      "distribution": "Historical collection",
+                      "storage": "Stored in a folder",
+                      "size": 1500,
+                      "labeled": true,
+                      "labeling_method": "Tumor present or not present",
+                      "known_issues": "No issues"
+                    },
+                    "task": {
+                      "expected_output": "Classify images as tumor present or not present.",
+                      "evaluation_metrics": [
+                        "accuracy",
+                        "precision",
+                        "recall",
+                        "F1 score",
+                        "root mean square error"
+                      ],
+                      "error_tolerance": "7 to 10%"
+                    },
+                    "constraints": {
+                      "privacy": "Protect the privacy of the dataset.",
+                      "legal_regulatory": "None specified",
+                      "ethical_concerns": "None specified"
+                    },
+                    "intended_users": [
+                      "Medical professionals",
+                      "Researchers"
+                    ],
+                    "timeline": "No specific deadline"
+                  }
+                }
+                
+                """;
+
+        String compute = """
+                ### Compute Environment Specification:
+                1. **Experience Level**: Beginner
+                2. **Preferred Location for Training**: Dedicated server
+                3. **Compute Option**: Dedicated server with GPU
+                4. **Available Storage Space**: About 1 TB
+                5. **Training Frequency**: Just once
+                6. **Budget for Computing Costs**: About $150
+                """;
+
+        String pipepine = """
+                Transfer Learning with Pre-trained CNN
+                
+                **Description:**
+                This pipeline leverages a pre-trained CNN model (e.g., VGG16, ResNet50) to improve performance by fine-tuning it on your specific dataset.
+                
+                **Steps:**
+                1. **Data Preprocessing:**
+                   - Load DICOM images and convert them to a suitable format.
+                   - Normalize pixel values.
+                   - Split the dataset into training (80%) and validation (20%) sets.
+                   - Use data augmentation techniques (e.g., rotation, flipping) to increase dataset diversity.
+                
+                2. **Model Architecture:**
+                   - Load a pre-trained model (e.g., VGG16) without the top layers.
+                   - Add a new fully connected layer with 128 neurons and ReLU activation.
+                   - Add a dropout layer for regularization.
+                   - Add an output layer with 1 neuron and sigmoid activation.
+                
+                3. **Compilation:**
+                   - Use binary cross-entropy as the loss function.
+                   - Optimize using Adam optimizer.
+                
+                4. **Training:**
+                   - Train the model for a specified number of epochs (e.g., 20) with early stopping based on validation loss.
+                
+                5. **Evaluation:**
+                   - Evaluate the model using accuracy, precision, recall, F1 score, and RMSE.
+                
+                """;
+
+        String userM1 = """
+                Here is a jason description of a research problem that can be solved by an AI.
+                {problem}
+                
+                And here is the available computing environment:
+                {compute}
+                
+                And here is the proposed pipeline:
+                {pipeline}
+                
+                """;
+
+//        Lets generate the implementation code for the pipeline. Do you need more information?
+
+
+        String userM = message;
+
+        if (counter == 0) {
+            userM = userM1
+                    .replace("{problem}", problemDefn)
+                    .replace("{compute}", compute)
+                    .replace("{pipeline}", pipepine);
+        }
+        counter++;
+
+        String systemM = """
+                You are an expert in code generation tasked with generating pipeline code based on a problem definition,
+                compute environment specification, and pipeline specification.
+                
+                Your tasks:
+                - First, evaluate whether the information provided is sufficient to generate the implementation code.
+                  If not, ask targeted clarification questions, one at a time, tailored to the user’s expertise level.
+                - Once sufficient information is available, generate the implementation code.
+                
+                Let's think step by step.
+                """;
+
+
+//        You will be given a semi-structured problem description, compute-environment specification, and a
+//        pipeline specification.
+
+        var content = chatClient.prompt()
+                .options(chatOptions)
+                .system(systemM)
+                .user(userM)
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .call()
                 .content();

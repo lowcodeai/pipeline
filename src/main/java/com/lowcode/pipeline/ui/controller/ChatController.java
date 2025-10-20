@@ -30,6 +30,7 @@ public class ChatController {
             case PROBLEM_DEFINITION -> ResponseEntity.ok(chatService.problemDefinition(conversationId, message));
             case COMPUTE_SPECIFICATION -> ResponseEntity.ok(chatService.computeSpecification(conversationId, message));
             case PIPELINE_SPECIFICATION -> ResponseEntity.ok(chatService.pipelineSpecification(conversationId, message));
+            case CODE_GENERATION -> ResponseEntity.ok(chatService.codeGeneration(conversationId, message));
             default -> ResponseEntity.badRequest().body("Invalid chat type");
         };
 //
