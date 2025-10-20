@@ -24,8 +24,6 @@ public class ChatController {
         String message = req.getMessage();
         ChatType chatType = req.getType();
 
-//        return ResponseEntity.ok(chatService.pipelineSpecification(conversationId, message));
-
         var response = switch (chatType) {
             case PROBLEM_DEFINITION -> ResponseEntity.ok(chatService.problemDefinition(conversationId, message));
             case COMPUTE_SPECIFICATION -> ResponseEntity.ok(chatService.computeSpecification(conversationId, message));

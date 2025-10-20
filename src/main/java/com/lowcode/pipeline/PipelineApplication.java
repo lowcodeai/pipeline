@@ -13,7 +13,11 @@ import org.springframework.web.client.RestTemplate;
 public class PipelineApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(PipelineApplication.class, args);
+		System.out.println(System.getenv().get("OPENAI_API_KEY"));
+		System.out.println(System.getenv().get("DB_USERNAME"));
+
 	}
 
 	@Bean

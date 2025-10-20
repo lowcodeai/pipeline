@@ -3,6 +3,8 @@ package com.lowcode.pipeline.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.Set;
+
 @Entity
 @Data
 public class Researcher {
@@ -15,4 +17,7 @@ public class Researcher {
     @Column(unique = true)
     private String email;
     String domain;
+
+    @OneToMany(mappedBy = "researcher")
+    private Set<Pipeline> pipelines;
 }
