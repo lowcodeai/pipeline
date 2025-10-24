@@ -6,18 +6,25 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
-@SpringBootApplication
+
+//Exclude Spring Security since JWT is used for the authentication and authorization
+@SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 public class PipelineApplication {
 
 	public static void main(String[] args) {
 
 		SpringApplication.run(PipelineApplication.class, args);
-		System.out.println(System.getenv().get("OPENAI_API_KEY"));
-		System.out.println(System.getenv().get("DB_USERNAME"));
 
+	}
+
+	@Bean
+	public BCryptPasswordEncoder bCryptPasswordEncoder() {
+		return new BCryptPasswordEncoder();
 	}
 
 	@Bean

@@ -1,23 +1,28 @@
 package com.lowcode.pipeline.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Set;
 
 @Entity
+@Table(name = "users")
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
-public class Researcher {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
     @Column(unique = true)
     private String userName;
-    @Column(unique = true)
-    private String email;
-    String domain;
+    private String password;
+    private String firstName;
+    private String lastName;
+    private String domain;
 
-    @OneToMany(mappedBy = "researcher")
+    @OneToMany(mappedBy = "user")
     private Set<Pipeline> pipelines;
 }

@@ -15,7 +15,7 @@ public class Pipeline {
 
     @ManyToOne
     @JoinColumn
-    private Researcher researcher;
+    private User user;
 
 
 }
