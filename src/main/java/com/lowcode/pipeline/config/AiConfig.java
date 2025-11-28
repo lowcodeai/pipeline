@@ -14,6 +14,7 @@ public class AiConfig {
 
     @Bean
     MessageWindowChatMemory chatMemory() {
+
         return MessageWindowChatMemory.builder().maxMessages(200).build();
     }
 
