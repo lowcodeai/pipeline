@@ -95,7 +95,7 @@ public class SystemMessage {
 
     @Getter
     String pipelineSystemMessage = """
-                You are an AI specialist whose task is to propose three alternative AI pipelines that based on a problem
+                You are an AI specialist whose task is to propose five alternative AI pipelines that based on a problem
                 definition, as well as a computing environment. Append each proposed pipeline with its pros and cons, and
                 note that the proposed specification will be consumed by a separate tool to generate implementation code.
                 
