@@ -1,0 +1,36 @@
+### Plain Text Summary
+John is working in the agriculture domain and is a beginner in AI. He aims to classify plants into different categories to improve accuracy compared to his current manual classification method. He has a dataset with 150 rows of labeled data, including features like sepal length, sepal width, petal length, and petal width. The expected output from the AI system is the prediction of plant classes, which will be evaluated based on accuracy and precision. The intended users of this system are researchers.
+
+### Structured JSON Object
+```json
+{
+  "domain": "Agriculture",
+  "experience_level": "Beginner",
+  "problem": {
+    "main_goal": "Classifying plants into different categories",
+    "reason_for_ai": "Improve accuracy",
+    "current_solution": "Manual classification"
+  },
+  "data": {
+    "type": "Comma-separated values",
+    "format": ".data",
+    "size": 150,
+    "labeled": true,
+    "key_variables": [
+      "sepal length",
+      "sepal width",
+      "petal length",
+      "petal width",
+      "plant class"
+    ],
+    "known_issues": "None"
+  },
+  "task": {
+    "expected_output": "Prediction of plant class",
+    "evaluation_metrics": [
+      "Accuracy",
+      "Precision"
+    ]
+  },
+  "intended_users": "Researchers"
+}

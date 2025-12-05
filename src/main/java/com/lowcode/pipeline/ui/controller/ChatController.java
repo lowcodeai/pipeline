@@ -6,6 +6,8 @@ import com.lowcode.pipeline.ui.request.ChatType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 
 @RestController
 @SessionAttributes("chatMemory")
@@ -18,7 +20,7 @@ public class ChatController {
     }
 
     @PostMapping("/chat")
-    public ResponseEntity<String> chat(@RequestBody ChatRequest req) {
+    public ResponseEntity<String> chat(@RequestBody ChatRequest req) throws IOException {
 
         String conversationId = req.getConversationID();
         String message = req.getMessage();
@@ -27,8 +29,10 @@ public class ChatController {
         var response = switch (chatType) {
             case PROBLEM_DEFINITION -> ResponseEntity.ok(chatService.problemDefinition(conversationId, message));
             case COMPUTE_SPECIFICATION -> ResponseEntity.ok(chatService.computeSpecification(conversationId, message));
-            case PIPELINE_SPECIFICATION -> ResponseEntity.ok(chatService.pipelineSpecification(conversationId, message));
+            case PIPELINE_SPECIFICATION -> ResponseEntity.ok(chatService.pipelineGeneration(conversationId, message));
             case CODE_GENERATION -> ResponseEntity.ok(chatService.codeGeneration(conversationId, message));
+            case REFINE_CODE_1 -> ResponseEntity.ok(chatService.refineCode1(conversationId, message));
+            case REFINE_CODE_2 -> ResponseEntity.ok(chatService.refineCode2(conversationId, message));
             default -> ResponseEntity.badRequest().body("Invalid chat type");
         };
 //

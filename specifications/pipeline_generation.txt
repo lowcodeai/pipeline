@@ -1,0 +1,14 @@
+#### Pipeline: Custom CNN with Hyperparameter Tuning
+1. **Data Preprocessing:**
+   - Resize and normalize images.
+   - Use a combination of data augmentation techniques.
+
+2. **Model Architecture:**
+   - Design a custom CNN architecture with multiple convolutional and pooling layers, batch normalization, and dropout.
+
+3. **Training:**
+   - Use CrossEntropyLoss and optimize with Adam.
+   - Implement hyperparameter tuning using techniques like Grid Search or Random Search.
+
+4. **Evaluation:**
+   - Evaluate using confusion matrix, accuracy, precision, and recall.

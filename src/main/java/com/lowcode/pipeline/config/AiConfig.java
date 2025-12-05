@@ -14,6 +14,7 @@ public class AiConfig {
 
     @Bean
     MessageWindowChatMemory chatMemory() {
+
         return MessageWindowChatMemory.builder().maxMessages(200).build();
     }
 
@@ -26,6 +27,8 @@ public class AiConfig {
 
     @Bean
     ChatOptions chatOptions(@Value("${ai.temperature:0.2}") double temp) {
-        return ChatOptions.builder().temperature(0.2).build();
+        return ChatOptions.builder()
+                .temperature(0.3)
+                .build();
     }
 }

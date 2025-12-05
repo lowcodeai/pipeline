@@ -1,0 +1,40 @@
+### Plain Text Summary:
+You are working on automating and improving the classification of waste materials into different categories using AI. Currently, the classification is done manually, which can be inefficient. You have a dataset of 4,752 images stored in 9 folders, each corresponding to a category of waste (Cardboard, Food Organics, Glass, Metal, Miscellaneous Trash, Paper, Plastic, Textile Trash, and Vegetation). The images are labeled based on their folder names. You aim for the AI model to classify these images with at least 95% accuracy and a tolerance for 5% misclassification. The intended users of this system will be researchers, and it will be deployed as a standalone application.
+
+### Structured JSON Object:
+```json
+{
+  "project": {
+    "domain": "Computer Science",
+    "experience_level": "Intermediate",
+    "problem": "Automate and improve the classification of waste materials into different categories.",
+    "goals": {
+      "main_goal": "Develop an AI model for waste material classification.",
+      "expected_output": "Classify images into categories."
+    },
+    "justification": "To improve the waste material classification process.",
+    "current_solution": "Manual inspection and classification.",
+    "data": {
+      "type": "Images",
+      "format": "JPG",
+      "distribution": "Batch",
+      "storage": "Stored in 9 folders corresponding to categories.",
+      "size": 4752,
+      "labeling": "Labeled using folder and file names.",
+      "issues": "No known issues."
+    },
+    "evaluation": {
+      "metrics": ["confusion matrix", "accuracy", "precision", "recall"],
+      "tolerance_for_errors": "5%",
+      "performance_goal": "At least 95% accuracy."
+    },
+    "constraints": {
+      "privacy": "None",
+      "legal": "None",
+      "ethical": "None"
+    },
+    "intended_users": "Researchers",
+    "deployment": "Standalone application"
+  }
+}
+```
