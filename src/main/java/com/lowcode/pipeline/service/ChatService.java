@@ -1,0 +1,495 @@
+package com.lowcode.pipeline.service;
+
+import com.lowcode.pipeline.util.OutputHandler;
+import com.lowcode.pipeline.util.SystemMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.Optional;
+
+@Service
+public class ChatService {
+
+    private final ChatClient chatClient;
+    private SystemMessage systemMessage;
+    private OutputHandler outputHandler;
+    private ChatOptions chatOptions;
+    private int counter = 0;
+    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
+
+    public ChatService(ChatClient chatClient, SystemMessage systemMessage, OutputHandler outputHandler, ChatOptions chatOptions) {
+        this.chatClient = chatClient;
+        this.systemMessage = systemMessage;
+        this.outputHandler = outputHandler;
+        this.chatOptions = chatOptions;
+    }
+
+    public String problemDefinition(String conversationId, String message) {
+        log.info("Problem Definition: conversation ID={}, message={}", conversationId, message);
+        
+//        Test tool calling
+//         DateTimeTools dateTime = new DateTimeTools();
+////        var content = chatClient.prompt(message)
+//////                .options(chatOptions)
+//////                .user(message)
+////                .tools(dateTime)
+//////                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+////                .call()
+////                .content();
+//         return chatClient.prompt()
+//               .user("Extract profile data from this text: " + message)
+//               .tools(dateTime)
+////               .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+//               .call()
+//               .entity(UserProfile.class);
+////               .content();
+//        
+////        End tool call test
+
+        var content = chatClient.prompt()
+                .options(chatOptions)
+                .system(systemMessage.getProblemSystemMessage())
+                .user(message)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .call()
+                .content();
+
+        Optional<String> response = Optional.ofNullable(content);
+
+        // Save response to file and then create a configuration
+        if (response.isPresent() && response.get().contains("Plain Text Summary")) {
+            log.info("Saving a problem definition to file");
+            outputHandler.saveResponseToFile("problem_" + conversationId, response.get());
+        }
+
+        return response.orElse("");
+    }
+
+
+    public String computeSpecification(String conversationId, String message) {
+        log.info("Requesting information for Compute and Tooling Specification ={}", conversationId);
+
+        String problemDefn = "";
+        try {
+            problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
+        } catch (IOException e) {
+            log.error("Failed to read problem definition file", e);
+            return "Failed to read problem definition file";
+        }
+
+        log.info("Problem Definition ={}", problemDefn);
+
+        String userM = """
+                Semi‑Structured Problem Definition:
+                {context}
+                
+                Begin by asking the first single question.
+                """.replace("{context}", problemDefn);
+
+        userM = counter == 0 ? userM : message;
+        counter++;
+        log.info("Current User Message ={}", userM);
+
+        final String userMessage = userM;
+
+
+        var content = chatClient.prompt()
+                .options(chatOptions)
+                .system(systemMessage.getComputeSystemMessage())
+                .user(userMessage)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .call()
+                .content();
+
+        Optional<String> response = Optional.ofNullable(content);
+
+        if (response.isPresent() && response.get().contains("Compute Environment Specification")) {
+            log.info("Saving compute and tooling specification to file");
+            outputHandler.saveResponseToFile("compute_" + conversationId, response.get());
+        }
+        return response.orElse("");
+    }
+
+    public String preprocessingGeneration(String conversationId, String message) {
+        log.info("Requesting information for Preprocessing Technique Generation ={}", conversationId);
+
+        String problemDefn = "";
+        String compute = "";
+        try {
+            problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
+        } catch (IOException e) {
+            log.error("Failed to read problem definition file", e);
+            return "Failed to read problem definition file";
+        }
+
+        try {
+            compute = outputHandler.readFile("specifications/compute_specification.txt");
+        } catch (IOException e) {
+            log.error("Failed to read compute specification file", e);
+            return "Failed to read compute specification file";
+        }
+
+
+        String userM1 = """
+                Here is a semi-structured description of a research problem that can be solved by an AI.
+                {problem}
+                
+                And here is the available computing environment:
+                {compute}
+                
+                Generate best suited data preprocessing and augmentation techniques (if applicable) for this problem,
+                which will be consumed by another tool to generate AI pipelines.
+                """;
+
+
+        String userM = message;
+
+        if (counter == 0) {
+            userM = userM1.replace("{problem}", problemDefn).replace("{compute}", compute);
+        }
+        counter++;
+
+
+        var content = chatClient.prompt()
+                .options(chatOptions)
+                .system(systemMessage.getPreprocessingSystemMessage())
+                .user(userM)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .call()
+                .content();
+
+        Optional<String> response = Optional.ofNullable(content);
+        // Save response to file and then create a configuration
+        if (response.isPresent() && response.get().contains("Preprocessing and Augmentation Techniques")) {
+            log.info("Saving generated preprocessing technique to a file");
+            outputHandler.saveResponseToFile("preprocessing_" + conversationId, response.get());
+
+        }
+        return response.orElse("");
+    }
+
+    public String pipelineGeneration(String conversationId, String message) {
+        log.info("Requesting pipeline information in Chat ID ={}, message: {}", conversationId, message);
+
+        String problemDefn = "";
+        String compute = "";
+        String preprocessing = "";
+        try {
+            problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
+        } catch (IOException e) {
+            log.error("Failed to read problem definition file", e);
+            return "Failed to read problem definition file";
+        }
+
+        try {
+            compute = outputHandler.readFile("specifications/compute_specification.txt");
+        } catch (IOException e) {
+            log.error("Failed to read compute specification file", e);
+            return "Failed to read compute specification file";
+        }
+
+        try {
+            preprocessing = outputHandler.readFile("specifications/preprocessing.txt");
+        } catch (IOException e) {
+            log.error("Failed to read preprocessing file", e);
+            return "Failed to read preprocessing file";
+        }
+
+
+
+
+        String userM1 = """
+                Here is a jason description of a research problem that can be solved by an AI.
+                {problem}
+                
+                Here is the available computing environment:
+                {compute}
+                
+                And here is the proposed preprocessing and optional augmentation techniques:
+                {preprocessing}
+                
+                
+                Do you need more information to propose five independent alternative AI pipelines?
+                if yes, ask for those information, one question at a time.
+                """;
+
+
+        String userM = message;
+
+        if (counter == 0) {
+            userM = userM1
+                    .replace("{problem}", problemDefn)
+                    .replace("{compute}", compute)
+                    .replace("{preprocessing}", preprocessing);
+        }
+        counter++;
+
+
+        var content = chatClient.prompt()
+                .options(chatOptions)
+                .system(systemMessage.getPipelineSystemMessage())
+                .user(userM)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .call()
+                .content();
+
+        Optional<String> response = Optional.ofNullable(content);
+        // Save response to file and then create a configuration
+        if (response.isPresent() && response.get().contains("Alternative AI Pipelines")) {
+            log.info("Saving generated pipelines to file");
+            outputHandler.saveResponseToFile("pipeline_" + conversationId, response.get());
+
+        }
+        return response.orElse("");
+    }
+
+    public String codeGeneration(String conversationId, String message) throws IOException {
+        log.info("Generating code in Chat ID ={}, message: {}", conversationId, message);
+
+        String problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
+
+        String compute = outputHandler.readFile("specifications/compute_specification.txt");
+
+        String pipeline = outputHandler.readFile("specifications/pipeline_generation.txt");
+
+//        String preprocessing = outputHandler.readFile("specifications/preprocessing.txt");
+
+        String userM1 = """
+                Here is a jason description of a research problem that can be solved by an AI.
+                {problem}
+                
+                Here is the available computing environment:
+                {compute}
+                
+                And here is the proposed pipeline:
+                {pipeline}
+                
+                """;
+
+        String userM = message;
+
+        if (counter == 0) {
+            userM = userM1
+                    .replace("{problem}", problemDefn)
+                    .replace("{compute}", compute)
+                    .replace("{pipeline}", pipeline);
+        }
+        counter++;
+
+
+        var content = chatClient.prompt()
+                .options(chatOptions)
+                .system(systemMessage.getCodeSystemMessage())
+                .user(userM)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .call()
+                .content();
+
+
+
+        Optional<String> response = Optional.ofNullable(content);
+        // Save response to file and then create a configuration
+        if (response.isPresent() && response.get().contains("AI Implementation Code")) {
+            log.info("Saving generated code to file");
+            outputHandler.saveResponseToFile("code" + conversationId, response.get());
+
+        }
+        return response.orElse("");
+    }
+
+    public String refineCode(String conversationId, String message) throws IOException {
+        log.info("Generating code in Chat ID ={}, message: {}", conversationId, message);
+
+        String problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
+
+        String compute = outputHandler.readFile("specifications/compute_specification.txt");
+
+        String code = outputHandler.readFile("specifications/code.txt");
+
+        String metrics = outputHandler.readFile("specifications/metrics.txt");
+
+        String userM1 = """
+                Here is a python code to train AI model:
+                {code}
+                
+                Based on this problem definition:
+                {problem}
+                
+                The computing environment:
+                {compute}
+                
+                And the training metrics based on the original code:
+                {metrics}
+                
+                Carefully review the code to ensure that it is bug-free and adeqaultely trains AI model that
+                addresses the requirements of the problem. At the end, generate an improved version of the code, which
+                addresses any identified issues with the original code. 
+                
+                """;
+
+        String userM = message;
+
+        if (counter == 0) {
+            userM = userM1
+                    .replace("{code}", code)
+                    .replace("{problem}", problemDefn)
+                    .replace("{compute}", compute)
+                    .replace("{metrics}", metrics);
+        }
+        counter++;
+
+
+
+
+//        You will be given a semi-structured problem description, compute-environment specification, and a
+//        pipeline specification.
+
+        var content = chatClient.prompt()
+                .options(chatOptions)
+                .system(systemMessage.getRefineCodeSystemMessage())
+                .user(userM)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .call()
+                .content();
+
+
+
+        Optional<String> response = Optional.ofNullable(content);
+        // Save response to file and then create a configuration
+        if (response.isPresent() && response.get().contains("AI Implementation Code")) {
+            log.info("Saving generated code to file");
+            outputHandler.saveResponseToFile("code_reviewed_1_" + conversationId, response.get());
+
+        }
+        return response.orElse("");
+    }
+
+
+//    public String refineCode2(String conversationId, String message) throws IOException {
+//        log.info("Generating code in Chat ID ={}, message: {}", conversationId, message);
+//
+//        String problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
+//
+//        String compute = outputHandler.readFile("specifications/compute_specification.txt");
+//
+//        String code = outputHandler.readFile("specifications/code.txt");
+//
+//        String userM1 = """
+//                Here is a python code to train AI model:
+//                {code}
+//
+//                Based on this problem definition:
+//                {problem}
+//
+//                As weell as this computing environment:
+//                {compute}
+//
+//                Carefully review the code and then improve it, targeting to improve the performance of the AI model
+//                significantly.
+//
+//
+//                """;
+//
+//        String userM = message;
+//
+//        if (counter == 0) {
+//            userM = userM1
+//                    .replace("{code}", code)
+//                    .replace("{problem}", problemDefn)
+//                    .replace("{compute}", compute);
+//        }
+//        counter++;
+//
+//
+//
+//
+////        You will be given a semi-structured problem description, compute-environment specification, and a
+////        pipeline specification.
+//
+//        var content = chatClient.prompt()
+//                .options(chatOptions)
+//                .system(systemMessage.getRefineCodeSystemMessage())
+//                .user(userM)
+//                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+//                .call()
+//                .content();
+//
+//
+//
+//        Optional<String> response = Optional.ofNullable(content);
+//        // Save response to file and then create a configuration
+//        if (response.isPresent() && response.get().contains("AI Implementation Code")) {
+//            log.info("Saving generated code to file");
+//            outputHandler.saveResponseToFile("code_reviewed_2_" + conversationId, response.get());
+//
+//        }
+//        return response.orElse("");
+//    }
+
+    public String fixError(String conversationId, String message) throws IOException {
+        log.info("Fixing error in Chat ID ={}, message: {}", conversationId, message);
+
+        String problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
+
+        String compute = outputHandler.readFile("specifications/compute_specification.txt");
+
+        String code = outputHandler.readFile("specifications/code.txt");
+
+        String error = outputHandler.readFile("specifications/error.txt");
+
+        String userM1 = """
+                Here is a problem definition that can be solved by an AI:
+                {problem}
+                
+                Here is the computing environment to train the AI model:
+                {compute}
+                
+                Here is a python code to train AI model:
+                {code}
+                
+                Here is a runtime error from the code
+                {error}
+                
+                Carefully review the code and then improve it, targeting to eliminate any error and improve the performance of the AI model
+                significantly.
+                
+                """;
+
+        String userM = message;
+
+        if (counter == 0) {
+            userM = userM1
+                    .replace("{code}", code)
+                    .replace("{problem}", problemDefn)
+                    .replace("{compute}", compute)
+                    .replace("{error}", error);
+        }
+        counter++;
+
+
+        var content = chatClient.prompt()
+                .options(chatOptions)
+                .system(systemMessage.getProblemSystemMessage())
+                .user(userM)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .call()
+                .content();
+
+
+
+        Optional<String> response = Optional.ofNullable(content);
+        // Save response to file and then create a configuration
+        if (response.isPresent() && response.get().contains("AI Implementation Code")) {
+            log.info("Saving fixed error code to file");
+            outputHandler.saveResponseToFile("fix_error_" + conversationId, response.get());
+
+        }
+        return response.orElse("");
+    }
+
+}

@@ -1,0 +1,53 @@
+Thank you for sharing your budget!
+
+Now, let's summarize the information you've provided so far and discuss the implications of your choices.
+
+### Compute Environment Specification
+```json
+{
+  "experience_level": "Beginner",
+  "training_location": "Narval cluster",
+  "compute_options": "On-premises cluster (Narval)",
+  "operating_system": "Linux",
+  "gpu_available": true,
+  "storage_space": "700 GB",
+  "training_frequency": "One-off",
+  "budget": "Less than $100"
+}
+```
+
+### Implications of Your Choices:
+
+1. **Cost:** 
+   - With a budget of less than $100, you may need to ensure that your training job is efficient and does not exceed this limit. Using the Narval cluster should help keep costs low, as it is likely funded by your institution.
+
+2. **Availability:**
+   - Since you are using the Narval cluster, you will need to check the availability of compute nodes, especially with GPU resources, as they may be in high demand.
+
+3. **Accessibility:**
+   - As a beginner, you may need assistance from your institution's IT support or documentation to navigate the cluster and set up your training job.
+
+4. **Privileges:**
+   - Ensure you have the necessary permissions to access the GPU nodes and sufficient storage for your dataset.
+
+5. **Model Performance:**
+   - Using a GPU will likely improve the performance of your model training compared to using only a CPU, especially for image classification tasks.
+
+6. **Training Time:**
+   - Since you plan to train your model just once, you should optimize your training process to complete within your available time frame, considering the cluster's workload.
+
+### Alternative Options for the Compute Environment:
+
+1. **Local Workstation:**
+   - **Implications:** 
+     - Lower cost but may lack the necessary GPU power for efficient training.
+     - Limited storage and processing capabilities compared to the cluster.
+     - More control over the environment but may require more setup time.
+
+2. **Cloud Computing:**
+   - **Implications:**
+     - Flexible resources and easy scaling, but costs can quickly exceed your budget.
+     - Requires familiarity with cloud platforms and potential additional setup time.
+     - May offer better performance if you can find a budget-friendly option.
+
+Would you like to explore any specific alternative options further, or do you have any other questions about your compute environment?

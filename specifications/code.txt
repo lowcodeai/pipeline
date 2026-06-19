@@ -1,0 +1,133 @@
+import pandas as pd
+import numpy as np
+import re
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, silhouette_score
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.callbacks import History
+from sklearn.decomposition import PCA
+import os
+
+# Step 1: Data Loading
+file_path = '/home/hyacinth/projects/def-sahraouh/hyacinth/datasets/product/mobile.csv'
+
+try:
+    data = pd.read_csv(file_path)
+except FileNotFoundError:
+    raise Exception(f"File not found at the specified path: {file_path}")
+except Exception as e:
+    raise Exception(f"An error occurred while loading the CSV file: {e}")
+
+# Step 2: Data Preprocessing
+# Check if required columns are present
+required_columns = ['Product ID', 'Product Title', 'Merchant ID', 'Cluster ID']
+if not all(col in data.columns for col in required_columns):
+    raise Exception("CSV file must contain the following columns: " + ", ".join(required_columns))
+
+# Remove duplicates
+data.drop_duplicates(inplace=True)
+
+# Handle missing values
+data.dropna(subset=['Product Title', 'Merchant ID'], inplace=True)
+
+# Text preprocessing
+def preprocess_text(text):
+    text = text.lower()  # Lowercase
+    text = re.sub(r'[^a-z0-9\s]', '', text)  # Remove special characters
+    return text
+
+data['Processed Title'] = data['Product Title'].apply(preprocess_text)
+
+# Step 3: Data Augmentation (Mixup)
+def mixup_titles(titles, alpha=0.2):
+    """Apply Mixup to create blended product titles."""
+    n = len(titles)
+    indices = np.random.permutation(n)
+    mixed_titles = []
+    for i in range(n):
+        mix_ratio = np.random.beta(alpha, alpha)
+        mixed_title = mix_ratio * titles[i] + (1 - mix_ratio) * titles[indices[i]]
+        mixed_titles.append(mixed_title)
+    return mixed_titles
+
+# Create augmented data
+data['Augmented Title'] = mixup_titles(data['Processed Title'].values)
+
+# Step 4: Model Training
+# TF-IDF Vectorization
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(data['Augmented Title']).toarray()
+y = data['Cluster ID']
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Build Neural Network Model
+model = Sequential()
+model.add(Dense(128, activation='relu', input_shape=(X_train.shape[1],)))
+model.add(Dropout(0.5))
+model.add(Dense(64, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(len(set(y)), activation='softmax'))  # Assuming cluster IDs are categorical
+
+# Compile model
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+# Train model
+history = History()
+model.fit(X_train, y_train, epochs=10, batch_size=32, validation_split=0.2, callbacks=[history])
+
+# Step 5: Evaluation
+y_pred = model.predict(X_test)
+y_pred_classes = np.argmax(y_pred, axis=1)
+
+# Calculate evaluation metrics
+accuracy = accuracy_score(y_test, y_pred_classes)
+precision = precision_score(y_test, y_pred_classes, average='weighted')
+recall = recall_score(y_test, y_pred_classes, average='weighted')
+f1 = f1_score(y_test, y_pred_classes, average='weighted')
+silhouette = silhouette_score(X_test, y_pred_classes)
+
+# Save evaluation metrics to CSV
+evaluation_results = pd.DataFrame({
+    'Metric': ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'Silhouette Score'],
+    'Value': [accuracy, precision, recall, f1, silhouette]
+})
+evaluation_results.to_csv('evaluation_results.csv', index=False)
+
+# Step 6: Visualization
+# Plotting training history
+plt.figure(figsize=(12, 5))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Model Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title('Model Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.savefig('model_training_history.png')
+plt.show()
+
+# Dimensionality Reduction for Visualization
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_test)
+
+plt.figure(figsize=(10, 8))
+sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=y_pred_classes, palette='viridis', legend='full')
+plt.title('PCA of Clusters')
+plt.savefig('cluster_visualization.png')
+plt.show()

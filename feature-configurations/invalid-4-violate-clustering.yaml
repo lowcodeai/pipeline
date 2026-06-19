@@ -1,0 +1,15 @@
+AI_Pipeline:
+  Analysis_Type: Clustering
+  Input_Data:
+    Type: Audio
+    AV_Type: Speech
+    Distribution: Balanced
+    Format: Structured
+    Size: Hundreds
+    Data_Privacy:
+      - Anonymized
+      - PII_Removed
+  Desired_Output: Binary Classification
+
+
+

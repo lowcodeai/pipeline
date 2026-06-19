@@ -1,0 +1,14 @@
+### Compute Environment Specification
+```json
+{
+  "compute_environment": {
+    "experience_level": "Intermediate",
+    "location": "HPC Server (Compute Canada)",
+    "operating_system": "Linux",
+    "compute_option": "HPC Server with GPU",
+    "storage_space": "More than 1 TB",
+    "training_frequency": "One-off",
+    "budget": 200
+  }
+}
+```

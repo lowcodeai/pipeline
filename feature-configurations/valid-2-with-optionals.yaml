@@ -1,0 +1,15 @@
+AI_Pipeline:
+  Analysis_Type: Classification
+  Input_Data:
+    Type:
+      Image: Medical Scans
+    Distribution: Balanced
+    Format: Structured
+    Size: Hundreds
+    Data_Privacy:
+      - Anonymized
+      - PII_Removed
+  Desired_Output: Binary Classification
+
+
+
