@@ -31,6 +31,25 @@ public class ChatService {
 
     public String problemDefinition(String conversationId, String message) {
         log.info("Problem Definition: conversation ID={}, message={}", conversationId, message);
+        
+//        Test tool calling
+//         DateTimeTools dateTime = new DateTimeTools();
+////        var content = chatClient.prompt(message)
+//////                .options(chatOptions)
+//////                .user(message)
+////                .tools(dateTime)
+//////                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+////                .call()
+////                .content();
+//         return chatClient.prompt()
+//               .user("Extract profile data from this text: " + message)
+//               .tools(dateTime)
+////               .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+//               .call()
+//               .entity(UserProfile.class);
+////               .content();
+//        
+////        End tool call test
 
         var content = chatClient.prompt()
                 .options(chatOptions)
@@ -123,8 +142,8 @@ public class ChatService {
                 And here is the available computing environment:
                 {compute}
                 
-                Generate best suited data preprocessing and augmentation techniques for this problem, which will be consumed by
-                another tool to generate AI pipelines.
+                Generate best suited data preprocessing and augmentation techniques (if applicable) for this problem,
+                which will be consumed by another tool to generate AI pipelines.
                 """;
 
 
@@ -191,7 +210,7 @@ public class ChatService {
                 Here is the available computing environment:
                 {compute}
                 
-                And here is the preprocessing and augmentation techniques:
+                And here is the proposed preprocessing and optional augmentation techniques:
                 {preprocessing}
                 
                 

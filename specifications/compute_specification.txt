@@ -1,13 +1,14 @@
 ### Compute Environment Specification
 ```json
 {
-  "experience_level": "Intermediate",
-  "training_location": "Dedicated Server",
-  "compute_options": "HPC, Narval Cluster",
-  "operating_system": "Linux",
-  "compute_type": "GPU",
-  "storage_space": "700 GB",
-  "training_frequency": "One-off",
-  "budget": "$100"
+  "compute_environment": {
+    "experience_level": "Intermediate",
+    "location": "HPC Server (Compute Canada)",
+    "operating_system": "Linux",
+    "compute_option": "HPC Server with GPU",
+    "storage_space": "More than 1 TB",
+    "training_frequency": "One-off",
+    "budget": 200
+  }
 }
 ```

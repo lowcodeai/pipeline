@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/hyacinth/code/mobile/deep/deep.py", line 59, in <module>
+    data['Augmented Title'] = mixup_titles(data['Processed Title'].values)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hyacinth/code/mobile/deep/deep.py", line 54, in mixup_titles
+    mixed_title = mix_ratio * titles[i] + (1 - mix_ratio) * titles[indices[i]]
+                  ~~~~~~~~~~^~~~~~~~~~~
+TypeError: can't multiply sequence by non-int of type 'float'

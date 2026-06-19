@@ -1,14 +1,19 @@
-#### Pipeline: Custom CNN with Hyperparameter Tuning
-1. **Data Preprocessing:**
-   - Resize and normalize images.
-   - Use a combination of data augmentation techniques.
+#### **Pipeline: Deep Learning-Based Clustering with Mixup**
 
-2. **Model Architecture:**
-   - Design a custom CNN architecture with multiple convolutional and pooling layers, batch normalization, and dropout.
-
-3. **Training:**
-   - Use CrossEntropyLoss and optimize with Adam.
-   - Implement hyperparameter tuning using techniques like Grid Search or Random Search.
-
-4. **Evaluation:**
-   - Evaluate using confusion matrix, accuracy, precision, and recall.
+**Steps:**
+1. **Data Loading**: Load the CSV file using Pandas.
+2. **Data Preprocessing**:
+   - Remove duplicates.
+   - Handle missing values.
+   - Lowercase product titles.
+   - Remove special characters.
+   - Tokenization.
+   - TF-IDF Vectorization.
+3. **Data Augmentation**:
+   - Apply Mixup to create blended product titles.
+4. **Model Training**:
+   - Use a neural network for feature extraction from product titles.
+   - Apply K-Means or other clustering algorithms on the extracted features.
+5. **Evaluation**:
+   - Calculate Accuracy, Precision, Recall, F1-Score, and Silhouette Score.
+6. **Visualization**: Use PCA or t-SNE for visualizing clusters.

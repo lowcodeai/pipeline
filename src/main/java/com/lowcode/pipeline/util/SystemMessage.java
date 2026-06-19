@@ -94,28 +94,32 @@ public class SystemMessage {
                 """;
     @Getter
     String preprocessingSystemMessage = """
-                You are an expert in AI data preprocessing and augmentation tasked with identifying the best preprocessing
-                 and augmentation techniques for a given dataset. Thoroughly analyze the dataset and its characteristics,
-                 and propose the best techniques to preprocess and augment the data.
+                You are an expert in designing and building AI pipelines, and you are tasked to propose the best
+                preprocessing techniques for a given dataset. 
                 
-                At the end, let's think step by step and generate a **Preprocessing and Augmentation Techniques**.
+                If applicable to the task and dataset, propose the best augmentation techniques to improve the model performance.
+                
+                At the end, let's think step by step and generate a the desired techniques.
                 """;
 
     @Getter
     String pipelineSystemMessage = """
                 You are an AI specialist whose task is to propose five alternative AI pipelines based on a problem
-                definition, data preprocessing and augmentation techniques, and a computing environment. Append each
-                proposed pipeline with its pros and cons, and note that the proposed specification will be consumed by a
-                separate tool to generate implementation code.
+                definition, data description, task description, a computing environment, as well as other relevant information. 
+                Each pipeline should cover all the required steps from data loading to validation/testing of the trained AI model.
+                Append each proposed pipeline with its pros and cons, and note that the proposed pipeline specification 
+                will be consumed by a separate tool to generate implementation code.
                 
                 Your tasks:
                 1. Evaluate whether the information provided is sufficient to generate five alternative AI pipelines. If not,
                 ask targeted clarification questions, one at a time, tailored to the user’s expertise level.
-                2. For each pipeline, determine best suited data preprocessing and augmentation techniques (based on the
-                proposed preprocessing and augmentation techniques) that can significantly improve the model training performance.
-                3. Once sufficient information is available, let's think step by step and generate the alternative pipelines,
-                 independent of one another, with the step by step
-                 details of each pipeline, as well the pros and cons, with a heading: **Alternative AI Pipelines**
+                2. For each pipeline, determine best suited data preprocessing (based on the
+                proposed preprocessing) that can significantly improve the model training performance.
+                3. If applicable, determine best suited data augmentation techniques (based on the
+                proposed augmentation techniques) that can significantly improve the model training performance.
+                4. Once sufficient information is available, let's think step by step and generate the alternative pipelines,
+                 independent of one another. Each pipeline should include a step by step details, as well the pros and cons,
+                 with a heading: **Alternative AI Pipelines**
                 """;
     @Getter
     String codeSystemMessage = """
@@ -125,17 +129,14 @@ public class SystemMessage {
             Your tasks:
             - First, evaluate whether the information provided is sufficient to generate the implementation code that will run successfully in the targeted
             computing environment without crashing. If not, ask targeted clarification questions, one at a time, tailored to the user’s expertise level.
-            - For tabular data:
-                - Verify with the user how the values are separated in the dataset.
-                - Ensure the correct presentation of column names.
-                - Preprocess the data to ensure that there is no encoding error. 
+            - Ensure that the data organization (e.g., verify the column names and separators for CSV data) is well captured to avoid any crashes.
+            - Ensure that the data path is well captured to avoid any crashes.
+            - Ensure that the code evaluates the model using relevant metrics and print the history of model performance after each epoch, and then save the values in a csv file.
+            - Ensure that the code plots the graphs of the relevant model evaluations at the end of the training as images and save them. 
             - Once sufficient information is available, generate the implementation code with proper validation of input
             data and the code should handle any potential exception with a reasonable message to the user.
             
             At the end, let's think step by step, and generate the code with a heading **AI Implementation Code****.
-            The code should depict the history of model performance after each epoch, and then save the graphs of the
-            metrics evaluation at the end of the model training as images, including training accuracy, training loss,
-            validation accuracy, and validation loss, and any other relevant metrics. Also, save the metrics in a csv file
             """;
 
 //    @Getter
@@ -161,12 +162,69 @@ public class SystemMessage {
 
     @Getter
     String fixErrorSystemMessage = """
-            You are an expert in reviewing code and you are required to thoroughly examine a given code and then generate
-            an improved version of the original code. You are given a runtime error from the code and you required
-            to fix it.
+            You are an expert in reviewing code and you are required to thoroughly examine the given code and then fix
+             the runtime error.
             
-            At the end, let's think step by step, and generate the code with a heading **AI Implementation Code****.
+            At the end, let's think step by step, and generate the corrected code with a heading **AI Implementation Code****.
             and provide the summary of the changes made to the original code.
             """;
+
+	public String getProblemSystemMessage() {
+		return problemSystemMessage;
+	}
+
+	public void setProblemSystemMessage(String problemSystemMessage) {
+		this.problemSystemMessage = problemSystemMessage;
+	}
+
+	public String getComputeSystemMessage() {
+		return computeSystemMessage;
+	}
+
+	public void setComputeSystemMessage(String computeSystemMessage) {
+		this.computeSystemMessage = computeSystemMessage;
+	}
+
+	public String getPreprocessingSystemMessage() {
+		return preprocessingSystemMessage;
+	}
+
+	public void setPreprocessingSystemMessage(String preprocessingSystemMessage) {
+		this.preprocessingSystemMessage = preprocessingSystemMessage;
+	}
+
+	public String getPipelineSystemMessage() {
+		return pipelineSystemMessage;
+	}
+
+	public void setPipelineSystemMessage(String pipelineSystemMessage) {
+		this.pipelineSystemMessage = pipelineSystemMessage;
+	}
+
+	public String getCodeSystemMessage() {
+		return codeSystemMessage;
+	}
+
+	public void setCodeSystemMessage(String codeSystemMessage) {
+		this.codeSystemMessage = codeSystemMessage;
+	}
+
+	public String getRefineCodeSystemMessage() {
+		return refineCodeSystemMessage;
+	}
+
+	public void setRefineCodeSystemMessage(String refineCodeSystemMessage) {
+		this.refineCodeSystemMessage = refineCodeSystemMessage;
+	}
+
+	public String getFixErrorSystemMessage() {
+		return fixErrorSystemMessage;
+	}
+
+	public void setFixErrorSystemMessage(String fixErrorSystemMessage) {
+		this.fixErrorSystemMessage = fixErrorSystemMessage;
+	}
+    
+    
 
 }
