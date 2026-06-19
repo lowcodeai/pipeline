@@ -1,0 +1,97 @@
+### Step 1: Data Preprocessing Techniques
+
+1. **Data Cleaning**:
+   - **Remove Duplicates**: Check for and remove any duplicate entries in the dataset based on the product title and product ID.
+   - **Handle Missing Values**: Identify any missing values in the dataset. Depending on their significance, either fill them with appropriate values (e.g., using a placeholder for missing titles) or remove those records.
+
+2. **Text Normalization**:
+   - **Lowercasing**: Convert all product titles to lowercase to ensure uniformity.
+   - **Removing Special Characters**: Strip out unnecessary punctuation and special characters from product titles to reduce noise.
+   - **Stop Words Removal**: Remove common stop words (e.g., "the", "and", "with") that do not contribute to the meaning of the titles.
+
+3. **Tokenization**:
+   - Split product titles into individual words or tokens for further processing.
+
+4. **Stemming/Lemmatization**:
+   - Apply stemming or lemmatization to reduce words to their base or root form, which can help in identifying similar products described differently.
+
+5. **Feature Engineering**:
+   - **TF-IDF Vectorization**: Convert the cleaned product titles into TF-IDF vectors to capture the importance of words in the context of the dataset.
+   - **N-grams Creation**: Generate n-grams (bigrams or trigrams) from the product titles to capture phrases that may represent products more accurately.
+
+6. **Encoding Categorical Variables**:
+   - **Merchant ID Encoding**: Convert the Merchant ID into a numerical format if needed for modeling.
+
+### Step 2: Data Augmentation Techniques
+
+While the primary task involves clustering based on product titles, data augmentation can be useful to improve the robustness of the model. Here are some techniques:
+
+1. **Synonym Replacement**:
+   - Replace certain words in product titles with their synonyms to create variations of the titles, helping the model learn to recognize similar products with different descriptions.
+
+2. **Back Translation**:
+   - Translate product titles to another language and then back to the original language to create paraphrased versions of the titles, which can help in capturing different ways of describing the same product.
+
+3. **Random Insertion**:
+   - Randomly insert relevant words into product titles to create new variations that may still represent the same product.
+
+4. **Random Deletion**:
+   - Randomly delete words from product titles to create variations that still maintain the core meaning.
+
+5. **Mixup**:
+   - Combine two different product titles to create a new title that blends the features of both, ensuring that they are still relevant to the products.
+
+### Step 3: Clustering and Evaluation
+
+After preprocessing and augmenting the data, the next steps involve clustering and evaluating the results:
+
+1. **Clustering Algorithm**:
+   - Use clustering algorithms such as K-Means, DBSCAN, or Agglomerative Clustering that can handle the constraints of not allowing products from the same merchant in the same cluster.
+
+2. **Evaluation Metrics**:
+   - Calculate the evaluation metrics (Accuracy, Precision, Recall, F1-Score, Silhouette Score) to assess the performance of the clustering model.
+
+3. **Visualization**:
+   - Use visualization techniques such as t-SNE or PCA to create visual representations of the clusters for better interpretability.
+
+### Summary of Proposed Techniques
+
+```json
+{
+  "data_preprocessing": [
+    "Remove duplicates",
+    "Handle missing values",
+    "Lowercasing",
+    "Remove special characters",
+    "Stop words removal",
+    "Tokenization",
+    "Stemming/Lemmatization",
+    "TF-IDF Vectorization",
+    "N-grams Creation",
+    "Merchant ID Encoding"
+  ],
+  "data_augmentation": [
+    "Synonym Replacement",
+    "Back Translation",
+    "Random Insertion",
+    "Random Deletion",
+    "Mixup"
+  ],
+  "clustering": [
+    "K-Means",
+    "DBSCAN",
+    "Agglomerative Clustering"
+  ],
+  "evaluation_metrics": [
+    "Accuracy",
+    "Precision",
+    "Recall",
+    "F1-Score",
+    "Silhouette Score"
+  ],
+  "visualization_techniques": [
+    "t-SNE",
+    "PCA"
+  ]
+}
+```

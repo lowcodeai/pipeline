@@ -29,10 +29,12 @@ public class ChatController {
         var response = switch (chatType) {
             case PROBLEM_DEFINITION -> ResponseEntity.ok(chatService.problemDefinition(conversationId, message));
             case COMPUTE_SPECIFICATION -> ResponseEntity.ok(chatService.computeSpecification(conversationId, message));
+            case PREPROCESSING -> ResponseEntity.ok(chatService.preprocessingGeneration(conversationId, message));
             case PIPELINE_SPECIFICATION -> ResponseEntity.ok(chatService.pipelineGeneration(conversationId, message));
             case CODE_GENERATION -> ResponseEntity.ok(chatService.codeGeneration(conversationId, message));
-            case REFINE_CODE_1 -> ResponseEntity.ok(chatService.refineCode1(conversationId, message));
-            case REFINE_CODE_2 -> ResponseEntity.ok(chatService.refineCode2(conversationId, message));
+            case REFINE_CODE -> ResponseEntity.ok(chatService.refineCode(conversationId, message));
+//            case REFINE_CODE_2 -> ResponseEntity.ok(chatService.refineCode2(conversationId, message));
+            case FIX_ERROR -> ResponseEntity.ok(chatService.fixError(conversationId, message));
             default -> ResponseEntity.badRequest().body("Invalid chat type");
         };
 //

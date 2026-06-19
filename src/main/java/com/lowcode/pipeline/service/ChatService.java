@@ -30,7 +30,26 @@ public class ChatService {
     }
 
     public String problemDefinition(String conversationId, String message) {
-        log.info("Chat in conversation={}, message={}", conversationId, message);
+        log.info("Problem Definition: conversation ID={}, message={}", conversationId, message);
+        
+//        Test tool calling
+//         DateTimeTools dateTime = new DateTimeTools();
+////        var content = chatClient.prompt(message)
+//////                .options(chatOptions)
+//////                .user(message)
+////                .tools(dateTime)
+//////                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+////                .call()
+////                .content();
+//         return chatClient.prompt()
+//               .user("Extract profile data from this text: " + message)
+//               .tools(dateTime)
+////               .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+//               .call()
+//               .entity(UserProfile.class);
+////               .content();
+//        
+////        End tool call test
 
         var content = chatClient.prompt()
                 .options(chatOptions)
@@ -96,8 +115,8 @@ public class ChatService {
         return response.orElse("");
     }
 
-    public String pipelineGeneration(String conversationId, String message) {
-        log.info("Requesting pipeline information in Chat ID ={}, message: {}", conversationId, message);
+    public String preprocessingGeneration(String conversationId, String message) {
+        log.info("Requesting information for Preprocessing Technique Generation ={}", conversationId);
 
         String problemDefn = "";
         String compute = "";
@@ -117,14 +136,14 @@ public class ChatService {
 
 
         String userM1 = """
-                Here is a jason description of a research problem that can be solved by an AI.
+                Here is a semi-structured description of a research problem that can be solved by an AI.
                 {problem}
                 
                 And here is the available computing environment:
                 {compute}
                 
-                Do you need more information to propose five alternative pipelines?
-                if yes, ask for those information, one question at a time.
+                Generate best suited data preprocessing and augmentation techniques (if applicable) for this problem,
+                which will be consumed by another tool to generate AI pipelines.
                 """;
 
 
@@ -132,6 +151,81 @@ public class ChatService {
 
         if (counter == 0) {
             userM = userM1.replace("{problem}", problemDefn).replace("{compute}", compute);
+        }
+        counter++;
+
+
+        var content = chatClient.prompt()
+                .options(chatOptions)
+                .system(systemMessage.getPreprocessingSystemMessage())
+                .user(userM)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                .call()
+                .content();
+
+        Optional<String> response = Optional.ofNullable(content);
+        // Save response to file and then create a configuration
+        if (response.isPresent() && response.get().contains("Preprocessing and Augmentation Techniques")) {
+            log.info("Saving generated preprocessing technique to a file");
+            outputHandler.saveResponseToFile("preprocessing_" + conversationId, response.get());
+
+        }
+        return response.orElse("");
+    }
+
+    public String pipelineGeneration(String conversationId, String message) {
+        log.info("Requesting pipeline information in Chat ID ={}, message: {}", conversationId, message);
+
+        String problemDefn = "";
+        String compute = "";
+        String preprocessing = "";
+        try {
+            problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
+        } catch (IOException e) {
+            log.error("Failed to read problem definition file", e);
+            return "Failed to read problem definition file";
+        }
+
+        try {
+            compute = outputHandler.readFile("specifications/compute_specification.txt");
+        } catch (IOException e) {
+            log.error("Failed to read compute specification file", e);
+            return "Failed to read compute specification file";
+        }
+
+        try {
+            preprocessing = outputHandler.readFile("specifications/preprocessing.txt");
+        } catch (IOException e) {
+            log.error("Failed to read preprocessing file", e);
+            return "Failed to read preprocessing file";
+        }
+
+
+
+
+        String userM1 = """
+                Here is a jason description of a research problem that can be solved by an AI.
+                {problem}
+                
+                Here is the available computing environment:
+                {compute}
+                
+                And here is the proposed preprocessing and optional augmentation techniques:
+                {preprocessing}
+                
+                
+                Do you need more information to propose five independent alternative AI pipelines?
+                if yes, ask for those information, one question at a time.
+                """;
+
+
+        String userM = message;
+
+        if (counter == 0) {
+            userM = userM1
+                    .replace("{problem}", problemDefn)
+                    .replace("{compute}", compute)
+                    .replace("{preprocessing}", preprocessing);
         }
         counter++;
 
@@ -163,11 +257,13 @@ public class ChatService {
 
         String pipeline = outputHandler.readFile("specifications/pipeline_generation.txt");
 
+//        String preprocessing = outputHandler.readFile("specifications/preprocessing.txt");
+
         String userM1 = """
                 Here is a jason description of a research problem that can be solved by an AI.
                 {problem}
                 
-                And here is the available computing environment:
+                Here is the available computing environment:
                 {compute}
                 
                 And here is the proposed pipeline:
@@ -185,11 +281,6 @@ public class ChatService {
         }
         counter++;
 
-
-
-
-//        You will be given a semi-structured problem description, compute-environment specification, and a
-//        pipeline specification.
 
         var content = chatClient.prompt()
                 .options(chatOptions)
@@ -211,7 +302,7 @@ public class ChatService {
         return response.orElse("");
     }
 
-    public String refineCode1(String conversationId, String message) throws IOException {
+    public String refineCode(String conversationId, String message) throws IOException {
         log.info("Generating code in Chat ID ={}, message: {}", conversationId, message);
 
         String problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
@@ -220,6 +311,8 @@ public class ChatService {
 
         String code = outputHandler.readFile("specifications/code.txt");
 
+        String metrics = outputHandler.readFile("specifications/metrics.txt");
+
         String userM1 = """
                 Here is a python code to train AI model:
                 {code}
@@ -227,8 +320,11 @@ public class ChatService {
                 Based on this problem definition:
                 {problem}
                 
-                And the computing environment:
+                The computing environment:
                 {compute}
+                
+                And the training metrics based on the original code:
+                {metrics}
                 
                 Carefully review the code to ensure that it is bug-free and adeqaultely trains AI model that
                 addresses the requirements of the problem. At the end, generate an improved version of the code, which
@@ -242,7 +338,8 @@ public class ChatService {
             userM = userM1
                     .replace("{code}", code)
                     .replace("{problem}", problemDefn)
-                    .replace("{compute}", compute);
+                    .replace("{compute}", compute)
+                    .replace("{metrics}", metrics);
         }
         counter++;
 
@@ -254,7 +351,7 @@ public class ChatService {
 
         var content = chatClient.prompt()
                 .options(chatOptions)
-                .system(systemMessage.getRefineCodeSystemMessageStep1())
+                .system(systemMessage.getRefineCodeSystemMessage())
                 .user(userM)
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .call()
@@ -273,8 +370,69 @@ public class ChatService {
     }
 
 
-    public String refineCode2(String conversationId, String message) throws IOException {
-        log.info("Generating code in Chat ID ={}, message: {}", conversationId, message);
+//    public String refineCode2(String conversationId, String message) throws IOException {
+//        log.info("Generating code in Chat ID ={}, message: {}", conversationId, message);
+//
+//        String problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
+//
+//        String compute = outputHandler.readFile("specifications/compute_specification.txt");
+//
+//        String code = outputHandler.readFile("specifications/code.txt");
+//
+//        String userM1 = """
+//                Here is a python code to train AI model:
+//                {code}
+//
+//                Based on this problem definition:
+//                {problem}
+//
+//                As weell as this computing environment:
+//                {compute}
+//
+//                Carefully review the code and then improve it, targeting to improve the performance of the AI model
+//                significantly.
+//
+//
+//                """;
+//
+//        String userM = message;
+//
+//        if (counter == 0) {
+//            userM = userM1
+//                    .replace("{code}", code)
+//                    .replace("{problem}", problemDefn)
+//                    .replace("{compute}", compute);
+//        }
+//        counter++;
+//
+//
+//
+//
+////        You will be given a semi-structured problem description, compute-environment specification, and a
+////        pipeline specification.
+//
+//        var content = chatClient.prompt()
+//                .options(chatOptions)
+//                .system(systemMessage.getRefineCodeSystemMessage())
+//                .user(userM)
+//                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+//                .call()
+//                .content();
+//
+//
+//
+//        Optional<String> response = Optional.ofNullable(content);
+//        // Save response to file and then create a configuration
+//        if (response.isPresent() && response.get().contains("AI Implementation Code")) {
+//            log.info("Saving generated code to file");
+//            outputHandler.saveResponseToFile("code_reviewed_2_" + conversationId, response.get());
+//
+//        }
+//        return response.orElse("");
+//    }
+
+    public String fixError(String conversationId, String message) throws IOException {
+        log.info("Fixing error in Chat ID ={}, message: {}", conversationId, message);
 
         String problemDefn = outputHandler.readFile("specifications/problem_definition.txt");
 
@@ -282,19 +440,23 @@ public class ChatService {
 
         String code = outputHandler.readFile("specifications/code.txt");
 
+        String error = outputHandler.readFile("specifications/error.txt");
+
         String userM1 = """
+                Here is a problem definition that can be solved by an AI:
+                {problem}
+                
+                Here is the computing environment to train the AI model:
+                {compute}
+                
                 Here is a python code to train AI model:
                 {code}
                 
-                Based on this problem definition:
-                {problem}
+                Here is a runtime error from the code
+                {error}
                 
-                As weell as this computing environment:
-                {compute}
-                
-                Carefully review the code and then improve it, targeting to improve the performance of the AI model
+                Carefully review the code and then improve it, targeting to eliminate any error and improve the performance of the AI model
                 significantly.
-                
                 
                 """;
 
@@ -304,19 +466,15 @@ public class ChatService {
             userM = userM1
                     .replace("{code}", code)
                     .replace("{problem}", problemDefn)
-                    .replace("{compute}", compute);
+                    .replace("{compute}", compute)
+                    .replace("{error}", error);
         }
         counter++;
 
 
-
-
-//        You will be given a semi-structured problem description, compute-environment specification, and a
-//        pipeline specification.
-
         var content = chatClient.prompt()
                 .options(chatOptions)
-                .system(systemMessage.getRefineCodeSystemMessageStep2())
+                .system(systemMessage.getProblemSystemMessage())
                 .user(userM)
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .call()
@@ -327,8 +485,8 @@ public class ChatService {
         Optional<String> response = Optional.ofNullable(content);
         // Save response to file and then create a configuration
         if (response.isPresent() && response.get().contains("AI Implementation Code")) {
-            log.info("Saving generated code to file");
-            outputHandler.saveResponseToFile("code_reviewed_2_" + conversationId, response.get());
+            log.info("Saving fixed error code to file");
+            outputHandler.saveResponseToFile("fix_error_" + conversationId, response.get());
 
         }
         return response.orElse("");

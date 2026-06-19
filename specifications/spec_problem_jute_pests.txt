@@ -1,0 +1,51 @@
+Thank you for specifying that a 5% tolerance for errors is acceptable in your classification system.
+
+To summarize the information you've provided:
+
+### Plain Text Summary:
+You are working on a project to classify jute pests using AI. Your goal is to automate the classification process and improve accuracy compared to the current manual method. You have a dataset of 7,235 images of jute pests, organized into training, validation, and test sets, with 17 different class labels. The images are stored in JPG format on your local computer. The dataset is imbalanced, with some classes having significantly more images than others. You plan to evaluate the system's performance using accuracy, precision, recall, F1 score, and confusion matrix. The intended users of the system are farmers, and you have a tolerance for errors of 5%.
+
+### Structured JSON Object:
+```json
+{
+  "domain": "Biology",
+  "experience_level": "Beginner",
+  "problem": {
+    "goal": "Classify jute pests using AI.",
+    "reason": "To automate the process and improve classification accuracy.",
+    "current_solution": "Manual classification."
+  },
+  "data": {
+    "type": "Images of jute pests",
+    "format": "JPG",
+    "distribution": "Batch",
+    "storage": "Local computer",
+    "key_variables": "17 class labels",
+    "size": 7235,
+    "labeled": true,
+    "labeling_method": "Subfolder names represent labels",
+    "issues": {
+      "imbalance": true
+    }
+  },
+  "task_definition": {
+    "output": "Classify images.",
+    "evaluation_metrics": [
+      "accuracy",
+      "precision",
+      "recall",
+      "F1 score",
+      "confusion matrix"
+    ],
+    "error_tolerance": "5%"
+  },
+  "constraints": {
+    "privacy": false,
+    "legal": false,
+    "ethical": false
+  },
+  "intended_users": "Farmers"
+}
+```
+
+If you have any further questions or need additional assistance, feel free to ask!

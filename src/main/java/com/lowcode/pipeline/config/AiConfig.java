@@ -26,9 +26,9 @@ public class AiConfig {
     }
 
     @Bean
-    ChatOptions chatOptions(@Value("${ai.temperature:0.2}") double temp) {
+    ChatOptions chatOptions(@Value("${ai.temperature:0.3}") double temp) {
         return ChatOptions.builder()
-                .temperature(0.3)
+                .temperature(0.4)
                 .build();
     }
 }

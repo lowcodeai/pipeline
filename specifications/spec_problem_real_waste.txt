@@ -1,0 +1,61 @@
+Thank you for sharing that the intended users of the system are researchers. 
+
+To summarize, here’s what we have gathered about your AI research problem:
+
+### Plain Text Summary
+You are working on a project in the field of Computer Science, specifically focused on automating the classification of waste materials to improve waste management. Currently, the classification is done manually, and you aim to enhance accuracy and efficiency using AI. You have a dataset of 4,752 labeled images in JPEG format, organized in folders by category, but there is an imbalance in the number of images across different waste categories. You expect the AI system to classify images into categories and will evaluate its success using metrics like accuracy, precision, recall, F1-score, and confusion matrix, with a tolerance for errors set at 3%. There are no constraints for the project, and the intended users are researchers.
+
+### Structured JSON Object
+```json
+{
+  "domain": "Computer Science",
+  "experience_level": "Intermediate",
+  "problem": {
+    "description": "Automate the classification of waste materials for effective waste management.",
+    "goals": "Improve accuracy and efficiency in waste classification.",
+    "current_solution": "Manual classification."
+  },
+  "data": {
+    "type": "Images",
+    "format": "JPEG",
+    "distribution": "Batch",
+    "organization": "Stored in folders by category.",
+    "features": "Images themselves.",
+    "size": 4752,
+    "labeled": true,
+    "labeling_method": "Folder names indicate the category.",
+    "data_issues": {
+      "imbalance": {
+        "Cardboard": 461,
+        "Food Organics": 411,
+        "Glass": 420,
+        "Metal": 790,
+        "Miscellaneous Trash": 495,
+        "Paper": 500,
+        "Plastic": 921,
+        "Textile Trash": 318,
+        "Vegetation": 436
+      }
+    }
+  },
+  "task": {
+    "expected_output": "Classify images into categories.",
+    "evaluation_metrics": [
+      "Accuracy",
+      "Precision",
+      "Recall",
+      "F1-Score",
+      "Confusion Matrix"
+    ],
+    "error_tolerance": "3%"
+  },
+  "constraints": {
+    "privacy": false,
+    "legal_regulatory": false,
+    "ethical": false
+  },
+  "intended_users": "Researchers"
+}
+```
+
+If you have any more questions or need further assistance, feel free to ask!

@@ -92,50 +92,66 @@ public class SystemMessage {
                 
                 Also, propose alternative options for the compute environment, and their implications.
                 """;
+    @Getter
+    String preprocessingSystemMessage = """
+                You are an expert in designing and building AI pipelines, and you are tasked to propose the best
+                preprocessing techniques for a given dataset. 
+                
+                If applicable to the task and dataset, propose the best augmentation techniques to improve the model performance.
+                
+                At the end, let's think step by step and generate a the desired techniques.
+                """;
 
     @Getter
     String pipelineSystemMessage = """
-                You are an AI specialist whose task is to propose five alternative AI pipelines that based on a problem
-                definition, as well as a computing environment. Append each proposed pipeline with its pros and cons, and
-                note that the proposed specification will be consumed by a separate tool to generate implementation code.
+                You are an AI specialist whose task is to propose five alternative AI pipelines based on a problem
+                definition, data description, task description, a computing environment, as well as other relevant information. 
+                Each pipeline should cover all the required steps from data loading to validation/testing of the trained AI model.
+                Append each proposed pipeline with its pros and cons, and note that the proposed pipeline specification 
+                will be consumed by a separate tool to generate implementation code.
                 
                 Your tasks:
-                1. Evaluate whether the information provided is sufficient to generate alternative AI pipelines. If not,
+                1. Evaluate whether the information provided is sufficient to generate five alternative AI pipelines. If not,
                 ask targeted clarification questions, one at a time, tailored to the user’s expertise level.
-                2. For each pipeline, determine best suited preprocessing techniques that can significantly improve the model training performance.
-                3. Once sufficient information is available, let's think step by step and generate the alternative pipelines with the step by step
-                 details of each pipeline, as well the pros and cons, with a heading: **Alternative AI Pipelines**
+                2. For each pipeline, determine best suited data preprocessing (based on the
+                proposed preprocessing) that can significantly improve the model training performance.
+                3. If applicable, determine best suited data augmentation techniques (based on the
+                proposed augmentation techniques) that can significantly improve the model training performance.
+                4. Once sufficient information is available, let's think step by step and generate the alternative pipelines,
+                 independent of one another. Each pipeline should include a step by step details, as well the pros and cons,
+                 with a heading: **Alternative AI Pipelines**
                 """;
     @Getter
     String codeSystemMessage = """
             You are an expert in code generation tasked with generating AI implementation code based on a problem definition,
-            compute environment specification, and pipeline specification.
+            compute environment specification, and proposed AI pipeline.
             
             Your tasks:
-            - First, evaluate whether the information provided is sufficient to generate the implementation code will run successfully in the targeted
+            - First, evaluate whether the information provided is sufficient to generate the implementation code that will run successfully in the targeted
             computing environment without crashing. If not, ask targeted clarification questions, one at a time, tailored to the user’s expertise level.
-            - Second, determine preprocessing techniques and other training approaches to improve the model performance significantly.
+            - Ensure that the data organization (e.g., verify the column names and separators for CSV data) is well captured to avoid any crashes.
+            - Ensure that the data path is well captured to avoid any crashes.
+            - Ensure that the code evaluates the model using relevant metrics and print the history of model performance after each epoch, and then save the values in a csv file.
+            - Ensure that the code plots the graphs of the relevant model evaluations at the end of the training as images and save them. 
             - Once sufficient information is available, generate the implementation code with proper validation of input
             data and the code should handle any potential exception with a reasonable message to the user.
             
             At the end, let's think step by step, and generate the code with a heading **AI Implementation Code****.
-            The code should depict the history of model performance after each epoch, and then save the graphs of the
-            metrics evaluation at the end of the model training as images.
             """;
 
-    @Getter
-    String refineCodeSystemMessageStep1 = """
-            You are an expert in code generation and you are required to thoroughly review a given code and then generated
-            an improved version of the original code.
-            
-            At the end, let's think step by step, and generate the code with a heading **AI Implementation Code****.
-            and provide the summary of the changes made to the original code.
-            """;
+//    @Getter
+//    String refineCodeSystemMessageStep1 = """
+//            You are an expert in code generation and you are required to thoroughly review a given code and then generate
+//            an improved version of the code.
+//
+//            At the end, let's think step by step, and generate the code with a heading **AI Implementation Code****.
+//            and provide the summary of the changes made to the original code.
+//            """;
 
     @Getter
-    String refineCodeSystemMessageStep2 = """
-            You are an expert in reviewing code and you are required to thoroughly examine a given code and then generate
-            an improved version of the original code. Pay special attentions to potential runtime errors and data source
+    String refineCodeSystemMessage = """
+            You are an expert in reviewing code and you are required to thoroughly examine a given code and its training
+            metrics and then generate an improved version of it. Pay special attentions to potential runtime errors and data source
             structure, enuring that the structure the code loads the data is the same as those specified in problem
             definition. Also, examine the preprocessing techniques used in the original code and improve them or introduce other techniques
             that are best suited for the training dataset, as detailed in the pipeline definition.
@@ -143,5 +159,72 @@ public class SystemMessage {
             At the end, let's think step by step, and generate the code with a heading **AI Implementation Code****.
             and provide the summary of the changes made to the original code.
             """;
+
+    @Getter
+    String fixErrorSystemMessage = """
+            You are an expert in reviewing code and you are required to thoroughly examine the given code and then fix
+             the runtime error.
+            
+            At the end, let's think step by step, and generate the corrected code with a heading **AI Implementation Code****.
+            and provide the summary of the changes made to the original code.
+            """;
+
+	public String getProblemSystemMessage() {
+		return problemSystemMessage;
+	}
+
+	public void setProblemSystemMessage(String problemSystemMessage) {
+		this.problemSystemMessage = problemSystemMessage;
+	}
+
+	public String getComputeSystemMessage() {
+		return computeSystemMessage;
+	}
+
+	public void setComputeSystemMessage(String computeSystemMessage) {
+		this.computeSystemMessage = computeSystemMessage;
+	}
+
+	public String getPreprocessingSystemMessage() {
+		return preprocessingSystemMessage;
+	}
+
+	public void setPreprocessingSystemMessage(String preprocessingSystemMessage) {
+		this.preprocessingSystemMessage = preprocessingSystemMessage;
+	}
+
+	public String getPipelineSystemMessage() {
+		return pipelineSystemMessage;
+	}
+
+	public void setPipelineSystemMessage(String pipelineSystemMessage) {
+		this.pipelineSystemMessage = pipelineSystemMessage;
+	}
+
+	public String getCodeSystemMessage() {
+		return codeSystemMessage;
+	}
+
+	public void setCodeSystemMessage(String codeSystemMessage) {
+		this.codeSystemMessage = codeSystemMessage;
+	}
+
+	public String getRefineCodeSystemMessage() {
+		return refineCodeSystemMessage;
+	}
+
+	public void setRefineCodeSystemMessage(String refineCodeSystemMessage) {
+		this.refineCodeSystemMessage = refineCodeSystemMessage;
+	}
+
+	public String getFixErrorSystemMessage() {
+		return fixErrorSystemMessage;
+	}
+
+	public void setFixErrorSystemMessage(String fixErrorSystemMessage) {
+		this.fixErrorSystemMessage = fixErrorSystemMessage;
+	}
+    
+    
 
 }
